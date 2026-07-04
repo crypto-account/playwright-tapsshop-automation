@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { TapsShopHomePage } = require('../../pages/TapsShopHomePage');
 
 test.describe('TS-01: Strona Główna', () => {
-    test('TC-01-05: Kliknięcie w produkt na stronie głównej przenosi do karty produktu', async ({ page }) => {
+    test('TC-01-05: Kliknięcie w produkt na stronie głównej przenosi do karty produktu', { tag: ['@regression'] }, async ({ page }) => {
         const homePage = new TapsShopHomePage(page);
 
         // 1. Otwórz stronę główną https://tapsshop.pl/

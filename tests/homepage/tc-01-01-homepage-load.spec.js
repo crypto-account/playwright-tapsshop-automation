@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { TapsShopHomePage } = require('../../pages/TapsShopHomePage');
 
 test.describe('TS-01: Strona Główna', () => {
-    test('TC-01-01: Załadowanie strony głównej i weryfikacja podstawowych sekcji', async ({ page }) => {
+    test('TC-01-01: Załadowanie strony głównej i weryfikacja podstawowych sekcji', { tag: ['@smoke', '@regression'] }, async ({ page }) => {
         const home = new TapsShopHomePage(page);
 
         const response = await page.goto(TapsShopHomePage.URL);

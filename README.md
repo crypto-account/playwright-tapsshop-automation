@@ -44,6 +44,19 @@ Currently implemented: **6 tests** across 2 suites.
 
 Full 46-scenario test plan documented in [`tests/tapsshop-test-plan.md`](tests/tapsshop-test-plan.md).
 
+### Test tagging strategy
+
+Tests are tagged to run different subsets at different CI stages:
+
+| Tag | Purpose | Count | Typical duration |
+|---|---|---|---|
+| `@smoke` | Critical happy path — blocks PR merge | 4 | ~2-3 min |
+| `@regression` | Full suite — runs on main / nightly | 6 | ~5-7 min |
+
+**Tagged tests:**
+- `@smoke @regression`: TC-01-01, TC-01-03, TC-01-04, TC-02-01 (homepage, nav, cart, listing)
+- `@regression`: TC-01-02, TC-01-05 (banner dismiss, product link)
+
 ## Running locally
 
 ```bash
@@ -53,6 +66,10 @@ npx playwright install --with-deps
 
 # run all tests (headless, all browsers)
 npm test
+
+# run by tag
+npm run test:smoke           # @smoke — critical path only, chromium
+npm run test:regression      # @regression — full suite, all browsers
 
 # run in headed mode with UI
 npm run test:headed
@@ -68,17 +85,24 @@ npm run report
 
 ## CI/CD
 
-### GitHub Actions
+### GitHub Actions — trigger matrix
 
-Runs on `push`/`pull_request` to `main` and on manual dispatch.
+Different suites run on different triggers — following mature CI/CD practice:
+
+| Trigger | What runs | Browsers | Blocking? | Rationale |
+|---|---|---|---|---|
+| **Pull Request** | `@smoke` only | chromium | ✅ Yes | Fast (~3 min) gate before merge |
+| **Push to `main`** | Full suite | chromium + firefox + webkit | ✅ Yes | Full verification after merge |
+| **Nightly cron (02:00 UTC)** | Full suite | chromium + firefox + webkit | ⏰ Scheduled | Catches regressions overnight |
+| **Manual dispatch** | Configurable (grep input) | chromium + firefox + webkit | 🤖 Manual | Debug / re-run on demand |
 
 **What the pipeline does:**
-- **Matrix strategy** — parallel jobs for chromium/firefox/webkit
+- **Matrix strategy** — parallel jobs for chromium/firefox/webkit (except PR)
 - **Caching** — `npm ci` cache + Playwright browsers cache (per version)
-- **Test execution** — `npx playwright test --project=<browser>`
+- **Concurrency control** — `cancel-in-progress` avoids duplicate runs on rapid pushes
 - **HTML report** — uploaded as artifact per browser (14-day retention)
 - **GitHub Pages** — chromium report auto-published on `main` push → live link
-- **Slack notification** — status + links to run and report
+- **Slack notification** — status + trigger type + links to run
 
 **GitHub Pages URL for latest report:**
 > https://crypto-account.github.io/playwright-tapsshop-automation/

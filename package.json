@@ -10,6 +10,9 @@
     "test:chromium:headed": "playwright test --project=chromium --headed",
     "test:homepage": "playwright test tests/homepage --project=chromium --headed",
     "test:catalog": "playwright test tests/catalog --project=chromium --headed",
+    "test:smoke": "playwright test --grep @smoke --project=chromium",
+    "test:regression": "playwright test --grep @regression",
+    "test:seed-excluded": "playwright test --grep-invert seed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "report": "playwright show-report"

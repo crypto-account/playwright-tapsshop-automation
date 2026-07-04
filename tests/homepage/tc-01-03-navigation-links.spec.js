@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { TapsShopHomePage } = require('../../pages/TapsShopHomePage');
 
 test.describe('TS-01: Strona Główna', () => {
-    test('TC-01-03: Nawigacja z menu do poszczególnych sekcji', async ({ page }) => {
+    test('TC-01-03: Nawigacja z menu do poszczególnych sekcji', { tag: ['@smoke', '@regression'] }, async ({ page }) => {
         const home = new TapsShopHomePage(page);
 
         await home.navigate();

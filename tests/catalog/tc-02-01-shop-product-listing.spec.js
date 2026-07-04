@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { TapsShopShopPage } = require('../../pages/TapsShopShopPage');
 
 test.describe('TS-02: Katalog Produktów i Kategorie', () => {
-    test('TC-02-01: Wyświetlenie listy produktów w sklepie', async ({ page }) => {
+    test('TC-02-01: Wyświetlenie listy produktów w sklepie', { tag: ['@smoke', '@regression'] }, async ({ page }) => {
         const shop = new TapsShopShopPage(page);
 
         await shop.navigate();

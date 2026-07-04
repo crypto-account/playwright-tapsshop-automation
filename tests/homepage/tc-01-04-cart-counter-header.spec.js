@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { TapsShopHomePage } = require('../../pages/TapsShopHomePage');
 
 test.describe('TS-01: Strona Główna', () => {
-  test('TC-01-04: Wyświetlanie licznika koszyka w nagłówku', async ({ page }) => {
+  test('TC-01-04: Wyświetlanie licznika koszyka w nagłówku', { tag: ['@smoke', '@regression'] }, async ({ page }) => {
     const homePage = new TapsShopHomePage(page);
 
     // 1. Otwórz stronę główną https://tapsshop.pl/ przy pustym koszyku (upewnij się że sesja jest czysta)

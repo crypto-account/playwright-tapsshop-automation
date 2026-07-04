@@ -5,7 +5,15 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Nightly regression at 02:00 UTC daily
+    - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Grep pattern (e.g. @smoke, @regression). Leave empty to run all.'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -13,14 +21,67 @@ permissions:
   id-token: write
 
 concurrency:
-  group: playwright-${{ github.ref }}
+  group: playwright-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Test (${{ matrix.browser }})
+  # PR: smoke only, chromium — fast blocking check (<3 min)
+  smoke:
+    if: github.event_name == 'pull_request'
+    name: Smoke (chromium)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get Playwright version
+        id: pw-version
+        run: |
+          version=$(node -p "require('@playwright/test/package.json').version")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+
+      - name: Install chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install OS deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run smoke tests
+        run: npx playwright test --project=chromium --grep "@smoke"
+
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Push to main / nightly / manual: full matrix (chromium/firefox/webkit)
+  full:
+    if: github.event_name != 'pull_request'
+    name: Full (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +112,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
 
-      - name: Install Playwright browser (${{ matrix.browser }})
+      - name: Install ${{ matrix.browser }}
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
@@ -59,8 +120,13 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps ${{ matrix.browser }}
 
-      - name: Run Playwright tests
-        run: npx playwright test --project=${{ matrix.browser }}
+      - name: Run tests
+        run: |
+          if [ -n "${{ inputs.grep }}" ]; then
+            npx playwright test --project=${{ matrix.browser }} --grep "${{ inputs.grep }}"
+          else
+            npx playwright test --project=${{ matrix.browser }}
+          fi
 
       - name: Upload HTML report
         if: always()
@@ -70,10 +136,11 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
+  # Publish chromium report to GitHub Pages — only on main push and nightly
   publish-report:
     name: Publish report to GitHub Pages
-    needs: test
-    if: always() && github.ref == 'refs/heads/main'
+    needs: full
+    if: always() && needs.full.result != 'skipped' && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -97,16 +164,21 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+  # Slack notification — always, adapts to trigger
   notify-slack:
     name: Notify Slack
-    needs: [test, publish-report]
+    needs: [smoke, full, publish-report]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Compute status
+      - name: Compute status and trigger
         id: status
         run: |
-          if [ "${{ needs.test.result }}" = "success" ]; then
+          smoke="${{ needs.smoke.result }}"
+          full="${{ needs.full.result }}"
+
+          # Success if either the executed job(s) succeeded (the other is likely skipped)
+          if { [ "$smoke" = "success" ] || [ "$smoke" = "skipped" ]; } && { [ "$full" = "success" ] || [ "$full" = "skipped" ]; }; then
             echo "emoji=✅" >> $GITHUB_OUTPUT
             echo "text=passed" >> $GITHUB_OUTPUT
             echo "color=good" >> $GITHUB_OUTPUT
@@ -115,6 +187,15 @@ jobs:
             echo "text=failed" >> $GITHUB_OUTPUT
             echo "color=danger" >> $GITHUB_OUTPUT
           fi
+
+          case "${{ github.event_name }}" in
+            pull_request)      trigger="PR smoke — chromium only" ;;
+            push)              trigger="Push to ${{ github.ref_name }} — full matrix" ;;
+            schedule)          trigger="Nightly regression — full matrix" ;;
+            workflow_dispatch) trigger="Manual dispatch" ;;
+            *)                 trigger="${{ github.event_name }}" ;;
+          esac
+          echo "trigger=$trigger" >> $GITHUB_OUTPUT
 
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v1.27.0
@@ -135,7 +216,7 @@ jobs:
                     {
                       "type": "section",
                       "fields": [
-                        { "type": "mrkdwn", "text": "*Repo:*\n${{ github.repository }}" },
+                        { "type": "mrkdwn", "text": "*Trigger:*\n${{ steps.status.outputs.trigger }}" },
                         { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}" },
                         { "type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
                         { "type": "mrkdwn", "text": "*Actor:*\n${{ github.actor }}" }
