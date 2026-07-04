@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 
-End-to-end test automation for **[tapsshop.pl](https://tapsshop.pl/)** — a WooCommerce test shop — using **Playwright + JavaScript** with the **Page Object Pattern**.
+End-to-end test automation for **[tapsshop.pl](https://tapsshop.pl/)** — a WooCommerce test shop — using **Playwright + JavaScript** with the **Page Object Pattern**. Includes matrix cross-browser CI, tag-based test selection, nightly regression, and GitHub Pages report publishing.
 
 ## Stack
 
