@@ -142,6 +142,11 @@ jobs:
     needs: full
     if: always() && needs.full.result != 'skipped' && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
+    # Pages API allows only one deployment at a time per environment.
+    # Serialise queued deploys instead of racing (which returns "Deployment failed, try again later").
+    concurrency:
+      group: "pages-deploy"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
