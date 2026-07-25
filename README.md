@@ -138,6 +138,66 @@ Detailed scenarios (46 test cases across 10 suites) are documented in [`tests/ta
 
 Generated using AI-assisted exploration (Playwright MCP + Claude Code).
 
+## Utilities
+
+### Chat load generator — `scripts/chat-loadgen.js`
+
+Standalone browser-side script for load-testing a Matrix/PhoneHQ-style chat composer. Sends N messages via the app's normal send path (composer input + send button), mixing plain text, real photos (Picsum) or generated JPEG noise, real MP4 videos, and PDF files — all fetched from public CORS-friendly CDNs.
+
+**Setup:** open the chat page, DevTools console (⌥⌘J / F12), paste the contents of `scripts/chat-loadgen.js`, press Enter. You should see `[chatLoad] ready`.
+
+**Basic examples:**
+
+```js
+// 20 text messages
+await chatLoad.sendLoop({ count: 20, prefix: 'NG' })
+
+// 50 messages, real photo (Picsum) every 5th
+await chatLoad.sendLoop({ count: 50, imageEvery: 5, prefix: 'NG' })
+
+// Full mix: image every 5, PDF file every 10, MP4 video every 15
+await chatLoad.sendLoop({ count: 30, imageEvery: 5, fileEvery: 10, videoEvery: 15, prefix: 'NG' })
+
+// Use locally generated noise images instead of Picsum
+await chatLoad.sendLoop({ count: 20, imageEvery: 5, imageSource: 'noise', prefix: 'NG' })
+
+// Continue numbering from where you left off
+await chatLoad.sendLoop({ count: 20, startIndex: 51, prefix: 'NG' })
+```
+
+**Two-user live test** (send/receive between accounts):
+1. Open the chat in a second browser profile / incognito window
+2. Log in as the other user
+3. Paste the script there, run with a different `prefix` (e.g. `'MH'`)
+
+**Attachment pools** (all CORS-friendly, cached per tab after first fetch):
+- **Video** — friday.mp4 (503 KB) → flower.mp4 (1.1 MB) → BigBuckBunny.mp4 (5.4 MB), H.264 + audio, rotated
+- **File** — tracemonkey PDF (992 KB) → helloworld PDF (1 KB), rotated
+- **Image** — Picsum.photos (real random photos, ~200–700 KB each) OR locally generated noise JPEG
+
+**Precedence** when an iteration matches multiple thresholds: `video > file > image`.
+
+**Options** (full list in the script header):
+
+| Option | Default | Purpose |
+|---|---|---|
+| `count` | — (required) | Total messages to send |
+| `imageEvery` | `0` | Send image every Nth message (`0` = never) |
+| `fileEvery` | `0` | Send file every Nth message; overrides image on collision |
+| `videoEvery` | `0` | Send video every Nth message; overrides image + file |
+| `imageSource` | `'picsum'` | `'picsum'` = real photos, `'noise'` = local canvas noise |
+| `prefix` | `'MSG'` | Message label prefix, e.g. `'NG'` → `NG-01: ...` |
+| `startIndex` | `1` | Number to start counting from |
+| `delayMs` | `200` | Pause between sends |
+| `words` | built-in list | Custom word pool for random text |
+| `imageOptions` | `{width:1600,height:1200,quality:0.85}` | JPEG size/quality (used only for `imageSource:'noise'`) |
+| `videoUrl` | — | Override pool with a specific URL |
+| `fileUrl` | — | Override pool with a specific URL |
+
+Returns `{ sent, failed, images, files, videos, first, last, results }`.
+
+> Note: this utility targets a specific composer (`#mention-text-input` + Lucide send icon). Selectors are Matrix/PhoneHQ-specific and won't work on other chat apps without adaptation.
+
 ## License
 
 ISC
