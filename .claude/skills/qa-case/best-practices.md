@@ -28,12 +28,13 @@ Every generated case MUST satisfy every rule below. Cases that fail the checklis
 - Explicit values when they drive the outcome (`email: qa+dupe@example.com`, `quantity: -1`, `password: 7chars!`)
 - Mark equivalence classes when any value in the class works: `<any valid email>`, `<random 33-char string>`, `<any P1 category>`
 - Never leave data implicit if it determines pass/fail
+- **For text-search inputs**: cover Polish diacritics + case-insensitivity (`łódź` → `Łódź`) and real-world special chars from the actual dataset (`"quoted names"`, `Filia; XYZ`, `AGH im. St. Staszica`). **Bundle them into one edge case, not one case per character.**
 
 ## Coverage — for every feature, aim to cover
 
 - **Positive** — happy path with valid data (at least 1 case)
 - **Negative** — invalid data, missing required fields, wrong types, wrong permissions (at least 2 cases)
-- **Edge** — boundary values (0, max, max+1, empty, unicode/emoji, whitespace, very long input) (at least 1 case)
+- **Edge** — boundary values (0, max, max+1, empty, unicode/emoji, whitespace, very long input) (at least 1 case). For search/filter inputs: 1–2 edges bundling several conditions (e.g. diacritics + case + special chars in one query) beat 5–8 cases each testing one condition
 - **State** — logged-in vs logged-out, different roles — only if relevant to the feature
 - **UI** — responsive breakpoint, keyboard navigation — only if in scope
 

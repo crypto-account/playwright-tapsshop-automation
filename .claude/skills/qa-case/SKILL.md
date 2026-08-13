@@ -57,7 +57,7 @@ ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wyni
 - `Priorytet` = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski` (kod + middot + polska etykieta; kod z przodu żeby Excel sort działał po wadze)
 - `Warunki wstępne` = stan startowy, który musi być spełniony (Given)
 - `Dane testowe` = konkretne wartości lub klasy równoważnościowe (`<dowolny poprawny email>`) — PRZED Krokami, bo dane wchodzą w kroki (When)
-- `Kroki` = numerowane kroki, imperatywne, deterministyczne, bez weryfikacji. Format zależy od typu pliku — patrz krok 6.
+- `Kroki` = numerowane kroki, imperatywne, deterministyczne, bez weryfikacji. **URL-e zawsze pełne** (`https://...`), nie relatywne ścieżki — pełny URL jest natychmiast czytelny i renderer XLSX potrafi go stylować (niebieski + podkreślenie). Format zależy od typu pliku — patrz krok 6.
 - `Oczekiwany rezultat` = JEDEN obserwowalny efekt (Then)
 
 Uwaga: `Type` (positive/negative/edge) NIE jest kolumną — dyscyplina coverage'u siedzi w `best-practices.md` i jest egzekwowana przy generowaniu. Intent testu komunikuje `Tytuł`.

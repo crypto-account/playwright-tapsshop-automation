@@ -39,6 +39,10 @@ BODY_FONT_BOLD = Font(name="Calibri", size=10, bold=True)
 # Columns whose body cells should render in bold (emphasises the case name)
 BOLD_COLUMNS = {"Tytuł", "Title"}
 
+# Category-colored columns that should stay in NORMAL weight (not bold).
+# By default, colored cells get CATEGORY_FONT (bold) — this set overrides to plain body font.
+CATEGORY_PLAIN_COLUMNS = {"Priorytet", "Priority"}
+
 # Columns whose body cells are parsed for inline rich text:
 #   "..." (double-quoted spans)  → bold
 #   https?://… full URL          → hyperlink (blue + underline; whole cell links if only one URL)
@@ -165,28 +169,19 @@ def style_sheet(ws, rows: list[list[str]], widths: dict[str, int],
         w = widths.get(name, 18)
         ws.column_dimensions[get_column_letter(idx)].width = w
 
-    # Row 1 — title bar (merged across all columns)
-    ws.cell(row=1, column=1, value=title_text(meta))
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ncols)
-    title_cell = ws.cell(row=1, column=1)
-    title_cell.fill = TITLE_FILL
-    title_cell.font = TITLE_FONT
-    title_cell.alignment = TITLE_ALIGN
-    ws.row_dimensions[1].height = 40
-
-    # Row 2 — column headers
+    # Row 1 — column headers
     for col_idx, val in enumerate(headers, start=1):
-        c = ws.cell(row=2, column=col_idx, value=val)
+        c = ws.cell(row=1, column=col_idx, value=val)
         c.fill = HEADER_FILL
         c.font = HEADER_FONT
         c.alignment = HEADER_ALIGN
         c.border = BORDER
-    ws.row_dimensions[2].height = 32
-    ws.freeze_panes = "A3"
+    ws.row_dimensions[1].height = 32
+    ws.freeze_panes = "A2"
 
-    # Body — start at row 3
+    # Body — start at row 2
     for offset, row in enumerate(rows[1:]):
-        r_i = 3 + offset
+        r_i = 2 + offset
         zebra = (offset % 2 == 1)  # alternate starting with unshaded first data row
         for c_i, val in enumerate(row, start=1):
             header = headers[c_i - 1]
@@ -199,7 +194,12 @@ def style_sheet(ws, rows: list[list[str]], widths: dict[str, int],
             for col_index, fill_map in category_fills.items():
                 if c_i == col_index and val in fill_map:
                     cell.fill = fill_map[val]
-                    cell.font = SEVERITY_FONT_WHITE if val == "Critical" else CATEGORY_FONT
+                    if val == "Critical":
+                        cell.font = SEVERITY_FONT_WHITE
+                    elif header in CATEGORY_PLAIN_COLUMNS:
+                        cell.font = BODY_FONT
+                    else:
+                        cell.font = CATEGORY_FONT
                     cell.alignment = BODY_ALIGN_CENTER
                     colored = True
                     break
@@ -212,13 +212,13 @@ def style_sheet(ws, rows: list[list[str]], widths: dict[str, int],
                 else:
                     cell.alignment = BODY_ALIGN_TOP
 
-                # Rich text: bold for "quoted" spans, link styling for URLs/paths.
-                # Applied only to designated long-text columns.
+                # Rich text: bold for "quoted" spans, blue+underline for URLs/paths.
+                # URLs are visually styled but NOT set as cell hyperlink — Excel forces
+                # the whole cell to link, which hurts UX (selecting text triggers navigation).
+                # If you want a clickable link back, add `cell.hyperlink = href` here.
                 if header in RICH_TEXT_COLUMNS and isinstance(val, str) and val and val != "-":
-                    rt, href = build_rich_text(val, origin)
+                    rt, _href = build_rich_text(val, origin)
                     cell.value = rt
-                    if href:
-                        cell.hyperlink = href
 
 
 RICH_TOKEN_RE = re.compile(

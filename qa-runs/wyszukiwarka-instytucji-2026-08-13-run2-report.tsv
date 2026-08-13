@@ -7,5 +7,5 @@ INST-05	PASS	"Klik nagłówka ""Nazwa"" (aktywny w trybie asc) → URL sort=-nam
 INST-06	PASS	"Klik ""Go to next page"" → URL offset=20, paginator ""21–40 z 2605"", pierwsza komórka indeksu = ""21"", pierwszy wiersz = ""Akademia Finansów i Biznesu Vistula; Filia w Ciechanowie"""	-	-	-
 INST-07	PASS	"Nawigacja do ?limit=50 → 50 wierszy, paginator ""1–50 z 2605"", combobox pokazuje ""50"". UWAGA: interakcja z MUI comboboxem przez programowy .click() nie otwiera menu (event handling przez mousedown w Portal); URL param zweryfikowany zamiast tego, funkcjonalność serwera OK."	-	-	-
 INST-08	PASS	"Znaleziono: 0, tabela renderuje jeden wiersz z tekstem ""Brak danych"" — poprawny empty state"	-	-	-
-INST-09	PASS	"Query 120 znaków (unicode + emoji) → Znaleziono: 0, empty state ""Brak danych"", console clean (0 errors/warnings), brak timeoutu, strona pozostaje interaktywna"	-	-	-
+INST-09	PASS	"Query 120 znaków (unicode + emoji) → Znaleziono: 0, empty state ""Brak danych"", console clean (0 errorshttps://kwalifikacje.gov.pl/warnings), brak timeoutu, strona pozostaje interaktywna"	-	-	-
 INST-10	PASS	"Query ""   "" (3 spacje) → Znaleziono: 2605 (spacje trimowane przed zapytaniem do API, brak parametra search wysłanego do backendu)"	-	-	-
