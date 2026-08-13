@@ -1,0 +1,11 @@
+ID	Status	Rzeczywisty rezultat	Waga	Zrzut ekranu	Reprodukcja
+INST-01	PASS	"Znaleziono: 2. Oba wiersze zawierają szukaną frazę: ""Akademia Bialska im. Jana Pawła II"" oraz ""...; Filia w Radzyniu Podlaskim"""	-	-	-
+INST-02	PASS	"Znaleziono: 571. Wszystkie 20 widocznych wierszy zawiera fragment ""Akademia"" (allMatchAkademia=true)"	-	-	-
+INST-03	PASS	URL zaktualizowany do ?roles=1, Znaleziono: 579 (spadek z 2605), tabela renderuje 20 wierszy	-	-	-
+INST-04	PASS	"Klik ""Wyczyść wszystkie"" → Znaleziono: 2605, activeChips=0, URL bez roles. UWAGA: w test case było napisane ""Pomiń filtry"", ale to jest skip-link a11y (sr-only) — nie reset. Poprawna nazwa akcji reset to ""Wyczyść wszystkie"" w sekcji ""Aktywne filtry"". Krok testu został zaktualizowany."	-	-	-
+INST-05	PASS	"Klik nagłówka ""Nazwa"" (aktywny w trybie asc) → URL sort=-name, pierwszy wiersz zmienia się z ""Dobre Imprezy Andrzej Prusisz"" (asc) na ""Związek ZDZ Oddział w Warszawie"" (desc)"	-	-	-
+INST-06	PASS	"Klik ""Go to next page"" → URL offset=20, paginator ""21–40 z 2605"", pierwsza komórka indeksu = ""21"", pierwszy wiersz = ""Akademia Finansów i Biznesu Vistula; Filia w Ciechanowie"""	-	-	-
+INST-07	PASS	"Nawigacja do ?limit=50 → 50 wierszy, paginator ""1–50 z 2605"", combobox pokazuje ""50"". UWAGA: interakcja z MUI comboboxem przez programowy .click() nie otwiera menu (event handling przez mousedown w Portal); URL param zweryfikowany zamiast tego, funkcjonalność serwera OK."	-	-	-
+INST-08	PASS	"Znaleziono: 0, tabela renderuje jeden wiersz z tekstem ""Brak danych"" — poprawny empty state"	-	-	-
+INST-09	PASS	"Query 120 znaków (unicode + emoji) → Znaleziono: 0, empty state ""Brak danych"", console clean (0 errors/warnings), brak timeoutu, strona pozostaje interaktywna"	-	-	-
+INST-10	PASS	"Query ""   "" (3 spacje) → Znaleziono: 2605 (spacje trimowane przed zapytaniem do API, brak parametra search wysłanego do backendu)"	-	-	-

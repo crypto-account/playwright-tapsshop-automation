@@ -1,0 +1,14 @@
+ID	Status	Actual Result	Severity	Screenshot	Repro
+INST-01	FAIL	Po kliknięciu przycisku wyszukiwania cała sekcja <main> (nagłówek, filtry, tabela wyników, paginacja) znika i nie odzyskuje się nawet po 8s czekania. URL zaktualizowany o ?search=..., ale brak jakichkolwiek treści merytorycznych	Critical	screenshots/INST-01.png	"1) Otwórz /wyszukiwarka-instytucji/?limit=20&offset=0
+2) Wpisz ""Akademia Bialska im. Jana Pawła II""
+3) Kliknij ikonę Szukaj obok pola — <main> unmount, brak wyników, brak komunikatu o błędzie"
+INST-02	FAIL	"Identyczne zachowanie jak INST-01 — kliknięcie ikony wyszukiwania z fragmentem ""Akademia"" powoduje unmount sekcji <main>. Bezpośrednia nawigacja do URL z ?search=Akademia zwraca ten sam pusty stan (bug jest po stronie klienta, ale reprodukuje się też przez URL param)"	Critical	screenshots/INST-02.png	1) Otwórz /wyszukiwarka-instytucji/?limit=20&offset=0&search=Akademia — <main> pusty, tabela nie renderuje się nigdy
+INST-03	FAIL	"Kliknięcie checkboxa ""Instytucja certyfikująca (IC)"" powoduje aktualizację URL do ...&roles=1, ale <main> unmount i nie odzyskuje się. Brak licznika ""Znaleziono"", brak tabeli, brak komunikatu o błędzie. W konsoli brak uncaught exception"	Critical	screenshots/INST-03.png	"1) Otwórz /wyszukiwarka-instytucji/?limit=20&offset=0
+2) Kliknij checkbox ""Instytucja certyfikująca (IC)"" — <main> unmount"
+INST-04	BLOCKED	Test wymaga wcześniej zastosowanego filtra. Zastosowanie filtra (INST-03) wywala widok wyników — nie można doprowadzić do stanu wyjściowego, w którym reset ma się wykonać	-	-	Zablokowane przez bug INST-03
+INST-05	BLOCKED	Po serii interakcji strona nawet dla czystego URL bez query params ładuje się z pustym <main> (mainInnerLen=0). Prawdopodobnie stan klienta jest trwale uszkodzony — możliwy wpływ cache/service-worker/storage; pełen restart kontekstu przeglądarki nie wystarczył	-	screenshots/INST-BLANK-STATE.png	Po INST-01…INST-03 sekwencji, ponowna nawigacja do bazowego URL nie renderuje treści; wymaga dalszego debug (Application storage / SW / stan Redux)
+INST-06	BLOCKED	"Jw. — nie można kliknąć ""next page"" na pustym widoku"	-	-	Zablokowane przez trwale uszkodzony stan klienta (patrz INST-05)
+INST-07	BLOCKED	"Jw. — combobox ""Wierszy na stronie"" nie renderuje się"	-	-	Zablokowane przez trwale uszkodzony stan klienta
+INST-08	BLOCKED	Test bezpośrednio pokrywany przez tę samą ścieżkę co INST-01/02 (search) — nie może zostać wykonany, dopóki INST-01 nie zostanie naprawiony	-	-	Zablokowane przez bug INST-01/INST-02
+INST-09	BLOCKED	Jw. — pokrywa search flow	-	-	Zablokowane przez bug INST-01/INST-02
+INST-10	BLOCKED	Jw. — pokrywa search flow	-	-	Zablokowane przez bug INST-01/INST-02
