@@ -43,7 +43,13 @@ Goal: locate real element names so cases don't invent selectors. Do not deep-cra
 
 ### 4. Generate test cases (TSV)
 
-Produce 5–10 cases minimum. Distribute across **positive / negative / edge** per the checklist. Respect anti-scope.
+Produce **4–15 cases**, dobrane pod złożoność ficzera:
+- 4 to floor pokrywający minimum coverage (1 positive + 2 negative + 1 edge z `best-practices.md`); niższa liczba oznacza brak jakiejś kategorii
+- 15 to ceiling — jeśli potrzebujesz więcej, ficzer jest prawdopodobnie zbyt szeroki i powinien być podzielony na osobne runy
+- Dla prostych ficzerów (formularz kontaktowy, toast) celuj w 4–6; dla ficzerów typu wyszukiwarka / filtr celuj w 8–10; dla złożonych flow (multi-step wizard) do 15
+- Nie dodawaj case'ów tylko żeby dojść do 10 — jeśli 5 solidnych case'ów pokrywa temat, zostaw 5
+
+Distribute across **positive / negative / edge** per the checklist. Respect anti-scope.
 
 Columns (tab-separated, in this exact order):
 
