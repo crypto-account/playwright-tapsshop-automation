@@ -1,0 +1,15 @@
+ID	Status	Rzeczywisty rezultat	Waga	Zrzut ekranu	Reprodukcja
+INST-01	PASS	"Znaleziono: 2. Pierwszy wiersz: ""Akademia Bialska im. Jana Pawła II"""	-	-	-
+INST-02	PASS	"Klik IC → URL updated do ?roles=1, Znaleziono: 579 (spadek z 2605), chip ""Instytucja certyfikująca (IC)"" widoczny"	-	-	-
+INST-03	PASS	"Klik ""wolnorynkowe"" → URL updated do ?qualification_categories=5, Znaleziono: 202, chip ""wolnorynkowe"" widoczny"	-	-	-
+INST-04	PASS	"Wpisanie ""Warszawa"" w combobox → autocomplete pokazał 1 opcję → klik na nią → URL updated do ?cities=Warszawa, Znaleziono: 350, chip ""Warszawa"" widoczny"	-	-	-
+INST-05	PASS	"Klik w link ""Akademia Bialska im. Jana Pawła II"" → nawigacja do /wyszukiwarka-instytucji/instytucje/Akademia-Bialska-im.-Jana-Pawła-II,30657. Profil renderuje: heading H1 z pełną nazwą, ~44kB treści, kluczowe pola NIP/KRS + adres siedziby widoczne"	-	-	-
+INST-06	PASS	"URL ?search=Akademia&roles=1&cities=Warszawa → Znaleziono: 30 (mniejsza niż każdy filtr osobno: 571 dla search, 579 dla IC, 350 dla Warszawa — potwierdza AND-logic), 3 chipy ""Aktywnych filtrów"", pierwszy wiersz ""Akademia Finansów i Biznesu Vistula"" (Warszawa + IC + Akademia)"	-	-	-
+INST-07	PASS	"Search ""xyzq-nonexistent"" → licznik Znaleziono: 0, tabela renderuje 1 wiersz ""Brak danych"", brak console errors"	-	-	-
+INST-08	PASS	"Bundled query `""akademia"" Łódź` → Znaleziono: 45, pierwszy wynik to ""Akademia Humanistyczno-Ekonomiczna w Łodzi"". Backend obsłużył: cudzysłowy w URL, case-insensitive dla ""akademia"", diakrytyki w ""Łódź"""	-	-	-
+INST-09	PASS	"URL z payloadem <script>alert(1)</script> → JavaScript NIE wykonany, search input pokazuje literalny tekst payloadu, Znaleziono: 0, ""Brak danych"", `document.body.innerHTML.includes('<script>alert')` = false (React automatycznie escape'uje treść przez text nodes)"	-	-	-
+INST-13	PASS	Viewport 375×667: znaleziono 2605 baseline, po search=Akademia znaleziono 571, brak horizontal overflow (scrollWidth ≤ innerWidth), search input widoczny i użyteczny	-	-	-
+INST-14	PASS	Viewport 768×1024: znaleziono 2605, brak horizontal overflow, 20 rows widocznych, layout Filtry + Tabela mieści się w szerokości bez konfliktów	-	-	-
+INST-15	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
+INST-16	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
+INST-17	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-

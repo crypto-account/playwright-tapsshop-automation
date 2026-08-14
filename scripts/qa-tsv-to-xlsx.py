@@ -87,7 +87,7 @@ STATUS_FILL = {
     "PASS":    PatternFill("solid", fgColor="C6EFCE"),
     "FAIL":    PatternFill("solid", fgColor="FFC7CE"),
     "BLOCKED": PatternFill("solid", fgColor="FFF2CC"),
-    "NOT RUN": PatternFill("solid", fgColor="E7E6E6"),
+    "NOT RUN": PatternFill("solid", fgColor="BDD7EE"),
 }
 SEVERITY_FILL = {
     "Critical": PatternFill("solid", fgColor="C00000"),

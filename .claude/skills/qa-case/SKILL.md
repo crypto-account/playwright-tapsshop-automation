@@ -51,6 +51,20 @@ Produce **4–15 cases**, dobrane pod złożoność ficzera:
 
 Distribute across **positive / negative / edge** per the checklist. Respect anti-scope.
 
+**Dwa tryby wykonania case'ów:**
+- **Automated** (domyślne) — Playwright MCP wykonuje kroki, Wynik = `PASS`/`FAIL`/`BLOCKED`. Kroki opisują akcje przeglądarki (nawigacja, klik, wpisywanie).
+- **Manual** — case przeznaczony do wykonania przez człowieka (Playwright nie potrafi zweryfikować). Wynik = `NOT RUN` przy generowaniu. Kroki opisują procedurę dla testera z konkretnym narzędziem (axe DevTools, VoiceOver ⌘F5, resize window do 320px, keyboard-only). Notatki muszą zawierać: „Wymaga manualnej weryfikacji przez testera" + estymatę czasu (np. „~30 min").
+
+**Kiedy generować manual cases:**
+- **A11y in scope (WCAG)** — **tylko manual, brak automated**. OBOWIĄZKOWO 3 bundled manual cases dla Perceivable / Operable / Understandable+AT (pełna referencja: `best-practices.md` sekcja „Manual WCAG 2.2 AA checks"). Automated Playwright a11y checks (accessible names przez DOM query, aria-live inspection itd.) NIE są generowane jako osobne cases — dają false confidence przy niepełnym pokryciu real WCAG audytu. Real a11y jest zawsze manualny (screen reader, kontrast, keyboard, focus behavior).
+  - **Priorytet WCAG cases: ZAWSZE `P1 · Krytyczny`** — dostępność to compliance/legal risk, nie „nice to have". Dla portali `.gov.pl` (i innych regulowanych — banking, healthcare) to wymóg prawny (Ustawa o dostępności cyfrowej / EU EAA / ADA). Nawet jeśli feature jest P2, a11y cases dostają P1 — niedostępna funkcja to skarga do rzecznika + potencjalna kara finansowa, niezależnie od wagi biznesowej samej funkcji.
+- **Responsive (mobile/tablet/desktop)** — dla portali publicznych / e-commerce / consumer-facing sites **ZAWSZE required**, niezależnie od tego czy user story wspomina o mobile. Ponad 60% polskiego web traffic to mobile — feature niedziałający na 375px = feature niedziałający dla ~60% users. Generuj **2 automated cases**: mobile 375px + tablet 768px (desktop ≥1280px jest pokryty baseline przez pozostałe cases w default viewport). Każdy case testuje że core flow (search + filter + interakcja) działa bez horizontal overflow, kluczowe elementy widoczne. Playwright `browser_resize(w,h)` + `browser_navigate` + assert `scrollWidth ≤ innerWidth`. **Priorytet responsive cases: dziedziczy z feature** (P1 feature → P1 responsive). Dla wewnętrznych admin tooli / desktop-only apps — pomiń (uwaga: musi być explicit w anti-scope, inaczej domyślnie generowane).
+- **Contrast/visual regression** — jeden manual case z axe DevTools lub Percy/Chromatic
+- **Performance perception** (feel, not metrics) — manual, real user
+- **Cross-browser sanity** — manual quick check w Firefox + Safari jeśli produkt ma niestandardowe features
+
+Manual cases NIE liczą się do case-count budget (4-15) — dochodzą jako uzupełnienie automated. Cały skill preferuje automated, manual to explicit exception dla rzeczy niemożliwych do zautomatyzowania.
+
 Columns (tab-separated, in this exact order):
 
 ```
@@ -59,10 +73,15 @@ ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wyni
 
 **Kolumny definicyjne (1–7)** — opisują test:
 - `ID` = `<FEATURE-PREFIX>-<NN>` (np. `LOGIN-01`), 2-cyfrowe zero-padded
-- `Tytuł` = krótkie zdanie imperatywne opisujące co testujemy — MUSI sygnalizować intent (positive/negative/edge). Przykłady: `"Wyszukiwanie po pełnej nazwie zwraca dopasowanie"` (positive), `"Wyszukiwanie bez dopasowań pokazuje pusty stan"` (negative), `"Wyszukiwanie unicode 120 znaków nie zawiesza strony"` (edge).
+- `Tytuł` — **zwięzły opis w języku produktu** (jeśli produkt polski → polski tytuł), **6–10 słów**, format: **czynność + obiekt + oczekiwany efekt**. MUSI sygnalizować intent (positive/negative/edge) przez samo sformułowanie.
+  - **Zbyt lakoniczne (unikaj):** `"Otwarcie profilu"`, `"Filtr IC"`, `"XSS"` — mówią WHAT bez EFFECT
+  - **Zbyt techniczne (unikaj):** `"Kliknięcie nazwy instytucji w tabeli otwiera stronę profilu z pełnymi danymi kontaktowymi (nazwa, NIP, adres)"` — szczegóły należą do Kroków/Oczekiwany rezultat, nie do tytułu
+  - **Właściwe (rób tak):** `"Kliknięcie w instytucję otwiera stronę z jej danymi"`, `"Filtr instytucji certyfikującej (IC) zawęża listę wyników"`, `"Złośliwy kod w parametrze URL nie zostaje wykonany"`
+  - **Bez English jargonu w tytule** — nie „AND", „sanitized", „end-to-end", „empty state", „XSS" (używaj: „łączy warunki", „nie zostaje wykonany", „pełny przepływ", „brak wyników", „złośliwy kod"). Techniczne akronimy tolerowane tylko gdy to nazwa własna funkcji produktu (IC, WCAG, PZZJ)
+  - **Bez konkretnych metryk** w tytule (`4.5:1`, `24×24 CSS px`, `?limit=99999`) — te idą do Kroków / Oczekiwany rezultat / Test Data
 - `Priorytet` = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski` (kod + middot + polska etykieta; kod z przodu żeby Excel sort działał po wadze)
 - `Warunki wstępne` = stan startowy, który musi być spełniony (Given)
-- `Dane testowe` = konkretne wartości lub klasy równoważnościowe (`<dowolny poprawny email>`) — PRZED Krokami, bo dane wchodzą w kroki (When)
+- `Dane testowe` = konkretne wartości lub klasy równoważnościowe (`<dowolny poprawny email>`) — PRZED Krokami, bo dane wchodzą w kroki (When). **Dla wyszukiwania/filtrów na realnych zbiorach danych:** lista wartości oddzielonych przecinkami, format: `nazwa: "X", "Y", "Z", "W"` — **pierwsza wartość = ta użyta w Krokach** (deterministyczna weryfikacja przez Playwright), pozostałe 3-5 to alternatywy z domeny do sprawdzenia przez testera (największe miasta, popularne instytucje, różne kategorie). Zero etykiet typu „Primary:" — konwencja implicit, first-value-wins. To daje pokrycie klas równoważnościowych (stolica vs małe miasto, uczelnia publiczna vs fundacja, popularna vs egzotyczna nazwa) bez enumeracji osobnych case'ów. **Dla edge/injection case'ów:** payload primary + 2-3 warianty ataku (SQLi, path traversal, template injection) tym samym formatem.
 - `Kroki` = numerowane kroki, imperatywne, deterministyczne, bez weryfikacji. **URL-e zawsze pełne** (`https://...`), nie relatywne ścieżki — pełny URL jest natychmiast czytelny i renderer XLSX potrafi go stylować (niebieski + podkreślenie). Format zależy od typu pliku — patrz krok 6.
 - `Oczekiwany rezultat` = JEDEN obserwowalny efekt (Then)
 
@@ -77,7 +96,13 @@ Feature name / suite is NOT a per-row column — it belongs to the whole run and
 
 ### 5. Execute each case
 
-For each case, replay the steps via Playwright MCP tools (`browser_click`, `browser_type`, `browser_fill_form`, `browser_snapshot`, etc.). Execution report sheet columns (Polish headers):
+**Manual cases (kroki wymagają narzędzia typu axe DevTools, screen reader, keyboard-only, resize window, physical device):**
+- NIE wykonuj przez Playwright — pozostaw Wynik = `NOT RUN`
+- W execution report wpisz: Status = `NOT RUN`, Rzeczywisty rezultat = „Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)", Waga/Screenshot/Reprodukcja = `-`
+- Detekcja: jeśli kroki zawierają którekolwiek z `axe DevTools`, `VoiceOver`, `NVDA`, `unplug mouse`, `keyboard-only`, `Cmd+F5`, `Rendering emulate`, `axe-core`, `Lighthouse` — to jest manual case
+
+**Automated cases (domyślne — Playwright MCP):**
+For each automated case, replay the steps via Playwright MCP tools (`browser_click`, `browser_type`, `browser_fill_form`, `browser_snapshot`, etc.). Execution report sheet columns (Polish headers):
 - **Status**: `PASS` | `FAIL` | `BLOCKED`
 - **Rzeczywisty rezultat**: what you actually observed (one line)
 - **Waga** (only if FAIL): `Critical` (blocks core flow) | `High` (major functional break) | `Medium` (workaround exists) | `Low` (cosmetic)
@@ -163,8 +188,9 @@ Requirement: `openpyxl` must be installed (`python3 -c "import openpyxl"` succee
 One message. Include:
 - Path to the `.xlsx` (the primary spreadsheet deliverable)
 - Path to the `.md` (human-readable)
-- Counts: `X passed / Y failed / Z blocked` out of N
+- Counts split: `A passed / B failed / C blocked / D not run (manual)` out of N — jeśli są manual cases, wyróżnij osobno
 - List of failing IDs (just IDs, one line)
+- Jeśli D > 0: przypomnienie do wykonania manualnego (jedno zdanie z estymatą łącznego czasu)
 
 Omit `.tsv` paths from the reply — they exist for diff-ability but the user typically opens the `.xlsx`.
 
