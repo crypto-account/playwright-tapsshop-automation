@@ -18,65 +18,70 @@ INST-04	Puste zapytanie wyszukiwarki zwraca pełną nieprzefiltrowaną listę	P2
 INST-05	Fraza bez dopasowań pokazuje pusty stan z komunikatem	P2 · Wysoki	Wyszukiwarka gotowa	fraza: "nieistniejacax9y9z9qwerty"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz frazę ""nieistniejacax9y9z9qwerty""
 3) Poczekaj ~2–3s na odświeżenie listy"	Licznik ""Znaleziono: 0"", tabela pokazuje wiersz ""Brak danych""	PASS	-	-
-INST-06	Wyszukiwanie znosi wariacje input: diakrytyki, wielkość liter, spacje i znaki specjalne	P2 · Wysoki	Baza zawiera instytucje z ""Łódź"" (~84) i ""Filia;"" (~200) w nazwie	"frazy: ""łódź"", ""ŁÓDŹ"", ""  Vistula  "" (z spacjami), ""Filia;"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-06	Wyszukiwarka zwraca te same wyniki mimo różnic w pisowni frazy (wielkość liter, spacje, znaki specjalne)	P2 · Wysoki	Baza zawiera instytucje z ""Łódź"" (~84) i ""Filia;"" (~200) w nazwie	"frazy: ""łódź"", ""ŁÓDŹ"", ""  Vistula  "" (z spacjami), ""Filia;"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz ""łódź"" (małe litery, z polskimi znakami), poczekaj ~3s, zapisz licznik (spodziewane 84)
 3) Wyczyść pole (Cmd/Ctrl+A + Delete), wpisz ""ŁÓDŹ"" (wielkie litery), poczekaj i porównaj licznik z krokiem 2
 4) Wyczyść, wpisz ""  Vistula  "" (2 spacje przed i po), poczekaj, sprawdź czy licznik = 22 (jak dla ""Vistula"" bez spacji)
 5) Wyczyść, wpisz ""Filia;"" (ze średnikiem), poczekaj, sprawdź licznik >0"	Wszystkie warianty (case, diakrytyki, spacje wiodące/końcowe, znaki specjalne z dataset) zwracają oczekiwane liczby bez błędu: łódź=ŁÓDŹ=84, ""  Vistula  ""=Vistula=22, Filia;=204	PASS	-	Trim spacji ✓, case-insensitive PL ✓, semikolon w query ✓. Bundle 4 patterns w 1 edge case
-INST-07	Wyszukiwarka odporna na długie ciągi i wstrzyknięcia wartości w parametrze URL	P1 · Krytyczny	Wyszukiwarka gotowa	"payloady: 500× ""a"" (długi ciąg), ""<script>alert(1)</script>"", limit=abc, offset=-1"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0&search=aaa…(500 znaków ""a"") — sprawdź brak crashu, licznik = 0
+INST-07	Wyszukiwarka znajduje polskie nazwy gdy fraza wpisana bez polskich znaków	P2 · Wysoki	Baza zawiera ~84 instytucje z "Łódź" w nazwie jako referencja	"fraza używana w krokach: ""lodz"" (bez polskich znaków); referencja porównawcza: ""łódź"" = 84 wyniki"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+2) W pole wyszukiwania wpisz frazę z Dane testowe (""lodz"" — bez polskich znaków / bez ogonków)
+3) Poczekaj ~2–3s i zapisz licznik ""Znaleziono""
+4) Wyczyść pole (Cmd/Ctrl+A + Delete), wpisz ""łódź"" (z polskimi znakami), poczekaj i zapisz licznik referencyjny (~84)
+5) Porównaj oba liczniki"	Licznik dla ""lodz"" ≈ licznik dla ""łódź"" (~84); backend normalizuje diakrytyki (unaccent / asciifolding) i znajduje nazwy z ""Łódź"" niezależnie od tego czy user wpisał ""lodz"" czy ""łódź""	FAIL	INST-BR-01	Rzeczywisty: lodz=1 vs łódź=84 → brak asciifolding w backendzie. Standardowy PL UX bug dla użytkowników na klawiaturze EN / mobile bez ogonków. Dla .gov.pl warto zgłosić jako bug nawet bez explicit spec (UX + regulatory standard). Screenshot dowodowy w Zrzut ekranu w report
+INST-08	Wyszukiwarka odporna na długie ciągi i wstrzyknięcia wartości w parametrze URL	P1 · Krytyczny	Wyszukiwarka gotowa	"payloady: 500× ""a"" (długi ciąg), ""<script>alert(1)</script>"", limit=abc, offset=-1"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0&search=aaa…(500 znaków ""a"") — sprawdź brak crashu, licznik = 0
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=abc&offset=-1&search=%3Cscript%3Ealert(1)%3C%2Fscript%3E
 3) Sprawdź czy nie pojawia się dialog alert, brak <script> w DOM, payload wyrenderowany jako tekst w polu wyszukiwania"	Brak crashu, brak reflected XSS (payload jako tekst), invalid limit/offset zostają normalizowane bez rzucenia stack trace, brak alertu	PASS	-	URL jest przedmiotem testu (deep-link + param injection) — kroki URL-driven są celowe. 500-char query: 0 wyników, ""Brak danych"", brak crashu. XSS: script jako tekst w polu, brak execution. Widget normalizował limit=abc→20; offset=-1 przekonwertowany na -20 (dziwne, ale bez crashu)
-INST-08	Filtr Zadania w ZSK zawęża listę wyników	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów, licznik 2605	filtr: "Instytucja certyfikująca (IC)"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-09	Filtr Zadania w ZSK zawęża listę wyników	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów, licznik 2605	filtr: "Instytucja certyfikująca (IC)"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W sekcji filtrów ""Zadania w ZSK"" zaznacz checkbox ""Instytucja certyfikująca (IC)"""	Licznik ""Znaleziono"" spada z 2605 do <2605, URL zawiera ""&roles=1""	PASS	-	Rzeczywisty: 2605→579
-INST-09	Filtr Kategoria kwalifikacji zawęża listę wyników	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów, licznik 2605	filtr: "wolnorynkowe" (Edukacja pozaformalna)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-10	Filtr Kategoria kwalifikacji zawęża listę wyników	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów, licznik 2605	filtr: "wolnorynkowe" (Edukacja pozaformalna)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W sekcji filtrów ""Kategoria kwalifikacji"" (grupa ""Edukacja pozaformalna"") zaznacz checkbox ""wolnorynkowe"""	Licznik spada z 2605 do <2605, URL zawiera ""&qualification_categories=5""	PASS	-	Rzeczywisty: 2605→202
-INST-10	Filtr Siedziba pokazuje tylko instytucje z wybranego miasta	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów	"miejscowość używana w krokach: ""Warszawa""; alternatywy do exploratory: ""Kraków"", ""Łódź"", ""Poznań"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-11	Filtr Siedziba pokazuje tylko instytucje z wybranego miasta	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów	"miejscowość używana w krokach: ""Warszawa""; alternatywy do exploratory: ""Kraków"", ""Łódź"", ""Poznań"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) Kliknij combobox ""Nazwa miejscowości..."" w sekcji ""Siedziba instytucji certyfikującej""
 3) Wpisz min. 3 znaki miejscowości z Dane testowe (""Warszawa"")
 4) Z listy podpowiedzi wybierz odpowiednią opcję (""Warszawa"")"	Licznik spada do <2605, URL zawiera ""&cities=Warszawa""	PASS	-	Rzeczywisty: 2605→350
-INST-11	Wybór wielu filtrów jednocześnie pokazuje tylko wspólne wyniki (logika AND)	P2 · Wysoki	Wyszukiwarka bez aktywnych filtrów	kombinacja: IC (roles=1) + wolnorynkowe (qualification_categories=5)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-12	Wybór wielu filtrów jednocześnie pokazuje tylko wspólne wyniki (logika AND)	P2 · Wysoki	Wyszukiwarka bez aktywnych filtrów	kombinacja: IC (roles=1) + wolnorynkowe (qualification_categories=5)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W sekcji filtrów ""Zadania w ZSK"" zaznacz checkbox ""Instytucja certyfikująca (IC)"", zapisz licznik (~579)
 3) W sekcji ""Kategoria kwalifikacji"" zaznacz checkbox ""wolnorynkowe""
 4) Poczekaj na odświeżenie listy i sprawdź licznik po kombinacji"	Licznik pokazuje wartość ≤ minimum z filtrów osobno (min(579, 202)=202)	PASS	-	Rzeczywisty: 148 ≤ 202
-INST-12	Kliknięcie ikony pomocy przy filtrze otwiera modal z definicją kategorii	P2 · Wysoki	Wyszukiwarka gotowa, filtry rozwinięte	ikona (i) obok nagłówka ""Zadania w ZSK"" i ""Kategoria kwalifikacji""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-13	Kliknięcie ikony pomocy przy filtrze otwiera modal z definicją kategorii	P2 · Wysoki	Wyszukiwarka gotowa, filtry rozwinięte	ikona (i) obok nagłówka ""Zadania w ZSK"" i ""Kategoria kwalifikacji""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) Kliknij ikonę informacji (i) obok nagłówka filtra ""Zadania w ZSK"""	Otwiera się modal z nagłówkiem ""Pomoc"" i treścią definicji (np. dla IC: ""Instytucja certyfikująca (IC) – uprawniona instytucja, która sprawdza wiedzę…"")	PASS	-	Ikona pomocy tylko dla 2 z 3 filtrów (brak dla ""Siedziba"" — pewnie by design)
-INST-13	Filtry bez wspólnych wyników pokazują pusty stan	P2 · Wysoki	Wyszukiwarka bez aktywnych filtrów	kombinacja: "search=nieistniejaca_instytucja_xyz" + "roles=1" (IC)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-14	Filtry bez wspólnych wyników pokazują pusty stan	P2 · Wysoki	Wyszukiwarka bez aktywnych filtrów	kombinacja: "search=nieistniejaca_instytucja_xyz" + "roles=1" (IC)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W sekcji ""Zadania w ZSK"" zaznacz checkbox ""Instytucja certyfikująca (IC)""
 3) W pole wyszukiwania wpisz frazę ""nieistniejaca_instytucja_xyz""
 4) Poczekaj ~2–3s na odświeżenie listy"	Licznik ""Znaleziono: 0"", tabela ""Brak danych""	PASS	-	-
-INST-14	Pobieranie pliku Excel uwzględnia aktywne filtry	P1 · Krytyczny	Wyszukiwarka z filtrem dającym <2605 wyników (np. search=Vistula → 22)	filtr aktywny, licznik = X	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-15	Pobieranie pliku Excel uwzględnia aktywne filtry	P1 · Krytyczny	Wyszukiwarka z filtrem dającym <2605 wyników (np. search=Vistula → 22)	filtr aktywny, licznik = X	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz ""Vistula"" i poczekaj aż licznik spadnie do 22
 3) Kliknij przycisk ""Pobierz"" w prawym górnym rogu listy
 4) Otwórz pobrany plik i sprawdź liczbę wierszy"	Pobrany plik zawiera header + X wierszy danych (odpowiada widocznemu licznikowi ""Znaleziono""), format .xlsx	PASS	-	Rzeczywisty: 22 wierszy w pliku (23 z headerem), match z counterem
-INST-15	Pobieranie bez aktywnych filtrów zwraca pełną listę instytucji	P2 · Wysoki	Wyszukiwarka bez filtrów	brak filtrów, licznik = 2605	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
+INST-16	Pobieranie bez aktywnych filtrów zwraca pełną listę instytucji	P2 · Wysoki	Wyszukiwarka bez filtrów	brak filtrów, licznik = 2605	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Kliknij ""Pobierz""
 3) Sprawdź liczbę wierszy w pobranym pliku"	Plik zawiera header + 2605 wierszy danych	PASS	-	Rzeczywisty: 2606 wierszy (header + 2605)
-INST-16	Pobieranie przy zerowych wynikach nie generuje pustego pliku bez nagłówka	P3 · Niski	Wyszukiwarka z frazą bez dopasowań (licznik = 0)	fraza: "nieistniejaca_xyz", licznik = 0	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-17	Pobieranie przy zerowych wynikach nie generuje pustego pliku bez nagłówka	P3 · Niski	Wyszukiwarka z frazą bez dopasowań (licznik = 0)	fraza: "nieistniejaca_xyz", licznik = 0	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz frazę ""nieistniejaca_xyz"" i poczekaj aż licznik pokaże ""Znaleziono: 0""
 3) Kliknij przycisk ""Pobierz""
 4) Otwórz pobrany plik i sprawdź czy zawiera nagłówek kolumn"	Przycisk ""Pobierz"" jest wyłączony LUB pobrany plik zawiera co najmniej nagłówek kolumn (nie tylko pusty arkusz)	FAIL	INST-BR-03	Przycisk nie jest disabled, plik ma 1×1 arkusz z pustą komórką (brak nawet nagłówka ""#/ID/Nazwa"") — mylące dla usera
-INST-17	Przycisk Następna strona przechodzi do kolejnych 20 wyników	P1 · Krytyczny	Wyszukiwarka na stronie 1 (offset=0), Next enabled	Kliknięcie ""Go to next page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
+INST-18	Przycisk Następna strona przechodzi do kolejnych 20 wyników	P1 · Krytyczny	Wyszukiwarka na stronie 1 (offset=0), Next enabled	Kliknięcie ""Go to next page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Zapisz info paginacji (np. ""1–20 z 2605"")
 3) Kliknij przycisk paginacji ""Go to next page""
 4) Sprawdź URL i info"	URL zawiera ""&offset=20"", info paginacji: ""21–40 z 2605"", tabela pokazuje nowe wiersze	PASS	-	-
-INST-18	Na pierwszej stronie przycisk Poprzednia jest wyłączony	P2 · Wysoki	Wyszukiwarka na stronie 1 (offset=0)	stan przycisku ""Go to previous page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
+INST-19	Na pierwszej stronie przycisk Poprzednia jest wyłączony	P2 · Wysoki	Wyszukiwarka na stronie 1 (offset=0)	stan przycisku ""Go to previous page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Zbadaj atrybut disabled przycisku ""Go to previous page"""	Przycisk ""Poprzednia"" ma disabled=true, klik nie ma efektu	PASS	-	-
-INST-19	Na ostatniej stronie przycisk Następna jest wyłączony	P2 · Wysoki	Wyszukiwarka na ostatniej stronie (offset=2600, 2601–2605)	stan przycisku ""Go to next page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=2600
-2) Zbadaj atrybut disabled przycisku ""Go to next page"""	Przycisk ""Następna"" ma disabled=true, info paginacji: ""2601–2605 z 2605"", tabela pokazuje 5 wierszy	PASS	-	URL ?offset=2600 jako skrót do stanu „ostatnia strona"; interakcja Next pokryta w INST-17
-INST-20	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw viewport 375×812
+INST-20	Na ostatniej stronie przycisk Następna jest wyłączony	P2 · Wysoki	Wyszukiwarka na ostatniej stronie (offset=2600, 2601–2605)	stan przycisku ""Go to next page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=2600
+2) Zbadaj atrybut disabled przycisku ""Go to next page"""	Przycisk ""Następna"" ma disabled=true, info paginacji: ""2601–2605 z 2605"", tabela pokazuje 5 wierszy	PASS	-	URL ?offset=2600 jako skrót do stanu „ostatnia strona"; interakcja Next pokryta w INST-18
+INST-21	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw viewport 375×812
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 3) Poczekaj ~2s
 4) Porównaj document.documentElement.scrollWidth z clientWidth"	scrollWidth ≤ clientWidth (brak horizontal overflow), licznik i lista widoczne	PASS	-	scrollWidth=360, clientWidth=360
-INST-21	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw viewport 768×1024
+INST-22	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw viewport 768×1024
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 3) Poczekaj ~2s
 4) Porównaj scrollWidth z clientWidth"	scrollWidth ≤ clientWidth, filtry i lista widoczne bez horizontal scroll	PASS	-	scrollWidth=753, clientWidth=753
-INST-22	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
+INST-23	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
 2) Uruchom skan axe dla wyszukiwarki i strony detali
 3) Resize viewport do 320×256 i sprawdź brak poziomego scrolla ani ucięcia treści
 4) Powiększ przeglądarkę do 200% (Ctrl+/Cmd+) i sprawdź brak clippingu tekstu
 5) DevTools → Rendering → Emulate vision deficiencies → grayscale, sprawdź czy stan filtrów (checked/unchecked) jest widoczny bez koloru"	Kontrast tekst ≥4.5:1, UI ≥3:1 (WCAG 1.4.3/1.4.11); brak horizontal scroll przy 320px (1.4.10); brak clippingu przy 200% zoom (1.4.4); informacja stanu nie jest przekazana wyłącznie kolorem (1.4.1)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~30 min. Krytyczne dla portalu .gov.pl (Ustawa o dostępności cyfrowej)
-INST-23	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
+INST-24	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
 2) Tab do search input, wpisz frazę ""Vistula""
 3) Tab do checkbox ""Instytucja certyfikująca (IC)"", spacja żeby zaznaczyć
 4) Tab do wiersza w tabeli, Enter
@@ -85,7 +90,7 @@ INST-23	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytycz
 7) Sprawdź czy każdy focus ma widoczny outline
 8) Zmierz w DevTools target size ikon (X, close), min. 24×24 CSS px
 9) Sprawdź Tab in i Tab out dla comboboxa Siedziba (brak keyboard trap)"	Cały flow możliwy tylko z klawiatury, każdy focus ma widoczny wskaźnik (WCAG 2.4.7), Tab order = wizualny order (2.4.3), brak keyboard trap (2.1.2), target size ≥24×24 CSS px (2.5.8)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~45 min. Krytyczne dla portalu .gov.pl
-INST-24	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
+INST-25	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
 2) Przejdź do search input i sprawdź czy label jest ogłoszony (nie tylko placeholder ""Nazwa, fragment nazwy"")
 3) Przejdź do comboboxa Siedziba i sprawdź label
 4) Wpisz frazę, sprawdź czy licznik ""Znaleziono: X"" jest ogłoszony (region aria-live)
