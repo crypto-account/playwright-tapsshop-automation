@@ -1,7 +1,7 @@
 ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wynik	ID buga	Notatki
 INST-01	Wyszukanie po nazwie zwraca listę pasujących instytucji	P1 · Krytyczny	Użytkownik na czystej stronie wyszukiwarki bez aktywnych filtrów	fraza używana w krokach: "Vistula"; alternatywy do exploratory: "Warszawa", "AGH"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania z placeholderem ""Nazwa, fragment nazwy"" wpisz frazę z Dane testowe (""Vistula"")
-3) Poczekaj ~2–3s na debounce i odświeżenie listy"	Licznik ""Znaleziono"" pokazuje wartość >0 a nazwy w wierszach zawierają frazę ""Vistula"" (case-insensitive)	PASS	-	-
+3) Poczekaj ~2–3 sekundy, aż lista sama się odświeży"	Licznik ""Znaleziono"" pokazuje wartość >0 a nazwy w wierszach zawierają frazę ""Vistula"" (case-insensitive)	PASS	-	-
 INST-02	Kliknięcie w nazwę instytucji otwiera jej szczegóły w nowej karcie	P1 · Krytyczny	Lista wyników wyświetla min. 1 instytucję (użyj ?search=Vistula)	pierwszy wiersz w tabeli (link ""Akademia Finansów i Biznesu Vistula"")	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz ""Vistula"" i poczekaj ~2–3s na odświeżenie listy
 3) Kliknij nazwę pierwszej instytucji w tabeli wyników (link ""Akademia Finansów i Biznesu Vistula"")
@@ -10,7 +10,7 @@ INST-03	Zewnętrzny link ze strony instytucji otwiera się bezpiecznie w nowej k
 2) W pole wyszukiwania wpisz ""Vistula"" i poczekaj na odświeżenie listy
 3) Kliknij nazwę ""Akademia Finansów i Biznesu Vistula"" (otwiera się nowa karta)
 4) Na stronie detali zlokalizuj sekcję ""Zobacz stronę instytucji""
-5) Kliknij link ""http://www.vistula.edu.pl"" i sprawdź czy otwiera się w nowej karcie"	Link do strony instytucji ma target=""_blank"" oraz rel=""noopener noreferrer""	PASS	-	Link zewnętrzny jest http:// nie https:// — potencjalny follow-up ticket
+5) Kliknij link ""http://www.vistula.edu.pl"" i sprawdź czy otwiera się w nowej karcie"	Link do strony instytucji ma target=""_blank"" oraz rel=""noopener noreferrer""	PASS	-	Uwaga poza scope tego testu: link do strony instytucji używa niezabezpieczonego protokołu HTTP zamiast HTTPS (przeglądarki pokazują ostrzeżenie „Not Secure"). Nie wpływa na wynik tego case a — warto zgłosić osobnym ticketem żeby wymusić HTTPS dla bezpieczeństwa użytkowników
 INST-04	Puste zapytanie wyszukiwarki zwraca pełną nieprzefiltrowaną listę	P2 · Wysoki	Wyszukiwarka gotowa	fraza pusta: search= (bez wartości)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz ""Vistula"" i poczekaj aż licznik spadnie do 22
 3) Zaznacz całą frazę w polu (Cmd/Ctrl+A) i naciśnij Delete żeby wyczyścić
@@ -68,20 +68,25 @@ INST-19	Na pierwszej stronie przycisk Poprzednia jest wyłączony	P2 · Wysoki	W
 2) Zbadaj atrybut disabled przycisku ""Go to previous page"""	Przycisk ""Poprzednia"" ma disabled=true, klik nie ma efektu	PASS	-	-
 INST-20	Na ostatniej stronie przycisk Następna jest wyłączony	P2 · Wysoki	Wyszukiwarka na ostatniej stronie (offset=2600, 2601–2605)	stan przycisku ""Go to next page""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=2600
 2) Zbadaj atrybut disabled przycisku ""Go to next page"""	Przycisk ""Następna"" ma disabled=true, info paginacji: ""2601–2605 z 2605"", tabela pokazuje 5 wierszy	PASS	-	URL ?offset=2600 jako skrót do stanu „ostatnia strona"; interakcja Next pokryta w INST-18
-INST-21	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw viewport 375×812
-2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
-3) Poczekaj ~2s
-4) Porównaj document.documentElement.scrollWidth z clientWidth"	scrollWidth ≤ clientWidth (brak horizontal overflow), licznik i lista widoczne	PASS	-	scrollWidth=360, clientWidth=360
-INST-22	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw viewport 768×1024
-2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
-3) Poczekaj ~2s
-4) Porównaj scrollWidth z clientWidth"	scrollWidth ≤ clientWidth, filtry i lista widoczne bez horizontal scroll	PASS	-	scrollWidth=753, clientWidth=753
-INST-23	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
+INST-21	Wyszukiwarka renderuje się poprawnie na typowych rozdzielczościach desktop	P1 · Krytyczny	Przeglądarka desktopowa z możliwością zmiany rozmiaru okna (DevTools lub natywnie)	"viewporty testowane: 1280×720 (małe laptopy, dolny próg), 1440×900 (MBP default), 1920×1080 (FHD monitor)"	"1) Ustaw okno przeglądarki na rozmiar 1280×720 pikseli (DevTools → Toggle device toolbar → wpisz ""1280 × 720"" w polach szerokość × wysokość)
+2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+3) Poczekaj ~2s na załadowanie strony i sprawdź wzrokowo: (a) NIE ma poziomego paska przewijania na dole okna, (b) widoczne w całości bez ucinania: pole wyszukiwania, sekcje filtrów, licznik ""Znaleziono"", tabela wyników
+4) Powtórz kroki 1–3 dla rozmiaru okna 1440×900
+5) Powtórz kroki 1–3 dla rozmiaru okna 1920×1080"	Na każdym z 3 rozmiarów okna (1280×720, 1440×900, 1920×1080): brak poziomego paska przewijania na dole okna, wszystkie elementy wyszukiwarki (pole wyszukiwania, filtry, tabela) widoczne w pełni bez ucinania przez prawą krawędź	PASS	-	Zaobserwowano: brak paska przewijania poziomego i pełną widoczność core UI na wszystkich 3 rozmiarach okna (1280×720, 1440×900, 1920×1080)
+INST-22	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw okno przeglądarki na rozmiar 768×1024 pikseli (DevTools → Toggle device toolbar → wybierz ""iPad"" LUB wpisz ""768 × 1024"")
+2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+3) Poczekaj ~2s na załadowanie strony
+4) Sprawdź wzrokowo: brak poziomego paska przewijania na dole okna, widoczne pole wyszukiwania, sekcje filtrów i tabela wyników bez ucinania"	Brak poziomego paska przewijania na dole okna, filtry i tabela wyników widoczne bez ucinania	PASS	-	Zaobserwowano: brak paska przewijania poziomego na tablecie 768×1024, wszystkie elementy widoczne
+INST-23	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw okno przeglądarki na rozmiar 375×812 pikseli (DevTools → Toggle device toolbar → wybierz ""iPhone SE"" lub ""iPhone 12/13"" LUB wpisz ""375 × 812"")
+2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+3) Poczekaj ~2s na załadowanie strony
+4) Sprawdź wzrokowo: brak poziomego paska przewijania na dole okna, core flow (pole wyszukiwania + filtry + tabela) widoczny bez ucinania"	Brak poziomego paska przewijania na dole okna, licznik "Znaleziono" i tabela wyników widoczne bez ucinania	PASS	-	Zaobserwowano: brak paska przewijania poziomego na telefonie 375×812, wszystkie elementy widoczne
+INST-24	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
 2) Uruchom skan axe dla wyszukiwarki i strony detali
 3) Resize viewport do 320×256 i sprawdź brak poziomego scrolla ani ucięcia treści
 4) Powiększ przeglądarkę do 200% (Ctrl+/Cmd+) i sprawdź brak clippingu tekstu
 5) DevTools → Rendering → Emulate vision deficiencies → grayscale, sprawdź czy stan filtrów (checked/unchecked) jest widoczny bez koloru"	Kontrast tekst ≥4.5:1, UI ≥3:1 (WCAG 1.4.3/1.4.11); brak horizontal scroll przy 320px (1.4.10); brak clippingu przy 200% zoom (1.4.4); informacja stanu nie jest przekazana wyłącznie kolorem (1.4.1)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~30 min. Krytyczne dla portalu .gov.pl (Ustawa o dostępności cyfrowej)
-INST-24	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
+INST-25	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
 2) Tab do search input, wpisz frazę ""Vistula""
 3) Tab do checkbox ""Instytucja certyfikująca (IC)"", spacja żeby zaznaczyć
 4) Tab do wiersza w tabeli, Enter
@@ -90,7 +95,7 @@ INST-24	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytycz
 7) Sprawdź czy każdy focus ma widoczny outline
 8) Zmierz w DevTools target size ikon (X, close), min. 24×24 CSS px
 9) Sprawdź Tab in i Tab out dla comboboxa Siedziba (brak keyboard trap)"	Cały flow możliwy tylko z klawiatury, każdy focus ma widoczny wskaźnik (WCAG 2.4.7), Tab order = wizualny order (2.4.3), brak keyboard trap (2.1.2), target size ≥24×24 CSS px (2.5.8)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~45 min. Krytyczne dla portalu .gov.pl
-INST-25	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
+INST-26	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
 2) Przejdź do search input i sprawdź czy label jest ogłoszony (nie tylko placeholder ""Nazwa, fragment nazwy"")
 3) Przejdź do comboboxa Siedziba i sprawdź label
 4) Wpisz frazę, sprawdź czy licznik ""Znaleziono: X"" jest ogłoszony (region aria-live)

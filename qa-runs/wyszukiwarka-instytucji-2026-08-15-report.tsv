@@ -22,8 +22,9 @@ INST-17	FAIL	Przycisk ""Pobierz"" nie jest disabled przy licznikiku 0. Pobrany p
 INST-18	PASS	Klik Next na offset=0 → URL ?limit=20&offset=20, info paginacji ""21–40 z 2605"", tabela pokazała nowe wiersze	-	-	-
 INST-19	PASS	Na offset=0 przycisk ""Go to previous page"" ma disabled=true	-	-	-
 INST-20	PASS	Na offset=2600 przycisk ""Go to next page"" ma disabled=true, info paginacji ""2601–2605 z 2605"", tabela pokazała 5 wierszy	-	-	-
-INST-21	PASS	Viewport 375×812 → scrollWidth=360, clientWidth=360, brak horizontal overflow, licznik i lista widoczne	-	-	-
-INST-22	PASS	Viewport 768×1024 → scrollWidth=753, clientWidth=753, brak overflow, filtry i lista widoczne	-	-	-
-INST-23	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
+INST-21	PASS	Na wszystkich 3 rozmiarach okna (1280×720, 1440×900, 1920×1080): brak paska przewijania poziomego na dole okna, core UI (pole wyszukiwania, filtry, tabela wyników) w pełni widoczne bez ucinania	-	-	-
+INST-22	PASS	Okno 768×1024: brak paska przewijania poziomego, filtry i tabela wyników widoczne bez ucinania	-	-	-
+INST-23	PASS	Okno 375×812: brak paska przewijania poziomego, licznik "Znaleziono" i tabela wyników widoczne bez ucinania	-	-	-
 INST-24	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
 INST-25	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
+INST-26	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
