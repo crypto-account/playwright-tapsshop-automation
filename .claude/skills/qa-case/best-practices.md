@@ -16,6 +16,9 @@ Every generated case MUST satisfy every rule below. Cases that fail the checklis
 - No implementation details ("call API...", "trigger the reducer") — user-visible actions only
 - No verification inside steps — verification lives in "Expected Result"
 - No skipped context: if the case needs a logged-in user, that goes in Preconditions, not step 1
+- **UI-driven, not URL-driven**: Kroki opisują akcje w interfejsie (wpisanie frazy w pole, klik przycisku, zaznaczenie checkboxa), nie skróty przez URL query params. Krok 1 = zawsze `Otwórz <base-URL>` **bez query params**; kolejne kroki symulują co user rzeczywiście robi w UI (typing, clicking, selecting). Case ma być manualnie odtwarzalny przez testera bez ręcznego konstruowania URL-i. Wyjątki dozwolone:
+  1. **URL to przedmiot testu** — deep-link scenario, param injection, XSS w URL: URL z parametrami idzie do Kroków, w Notatki dopisz „URL jest przedmiotem testu"
+  2. **Setup shortcut do trudnego stanu** — np. „paginate do ostatniej strony" = ~130 kliknięć: URL shortcut OK POD WARUNKIEM że sama interakcja jest przetestowana w innym case; w Notatkach: „URL jako skrót do stanu; interakcja pokryta w INST-XX"
 
 ## Expected result
 

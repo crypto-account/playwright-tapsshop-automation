@@ -27,17 +27,15 @@ Konkretne wartości lub klasy równoważnościowe (`<dowolny poprawny email>`). 
 
 ### Dla wyszukiwania / filtrów na realnych zbiorach danych
 
-Lista wartości oddzielonych przecinkami, format:
+**Explicit label** — wartość deterministyczna (używana w Krokach) oddzielona od alternatyw exploratory:
 
 ```
-nazwa: "X", "Y", "Z", "W"
+<nazwa> używana w krokach: "X"; alternatywy do exploratory: "Y", "Z", "W"
 ```
 
-**Pierwsza wartość = ta użyta w Krokach** (deterministyczna weryfikacja przez Playwright), pozostałe 3–5 to alternatywy z domeny do sprawdzenia przez testera (największe miasta, popularne instytucje, różne kategorie).
+Kroki referencują wartość zdaniem: „W pole wyszukiwania wpisz frazę **z Dane testowe** (""X"")". Tester widzi którą wartość zreplikować bez skoku wzroku (wartość in-line), a alternatywy są jasno oznaczone jako do rozszerzonego testowania (największe miasta, popularne instytucje, różne kategorie).
 
-Zero etykiet typu „Primary:" — konwencja implicit, first-value-wins.
-
-To daje pokrycie klas równoważnościowych (stolica vs małe miasto, uczelnia publiczna vs fundacja, popularna vs egzotyczna nazwa) bez enumeracji osobnych case'ów.
+To daje pokrycie klas równoważnościowych (stolica vs małe miasto, uczelnia publiczna vs fundacja, popularna vs egzotyczna nazwa) bez enumeracji osobnych case'ów i bez łamania atomicity (case testuje jedną wartość deterministycznie; alternatywy = manualne rozszerzenie).
 
 ### Dla edge / injection case'ów
 
