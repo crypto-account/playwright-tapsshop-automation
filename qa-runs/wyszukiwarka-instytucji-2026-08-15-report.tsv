@@ -1,30 +1,34 @@
 ID	Status	Rzeczywisty rezultat	Waga	Zrzut ekranu	Reprodukcja
-INST-01	PASS	Vistula → Znaleziono: 22, pierwszy wiersz: ""Akademia Finansów i Biznesu Vistula""	-	-	-
-INST-02	PASS	Link ""Akademia Finansów i Biznesu Vistula"" ma target=""_blank"", href /wyszukiwarka-instytucji/instytucje/Akademia-Finans%C3%B3w-i-Biznesu-Vistula,30170	-	-	-
-INST-03	PASS	Link ""http://www.vistula.edu.pl/"" na stronie detali ma target=""_blank"" + rel=""noopener noreferrer"" — bezpieczne otwarcie	-	-	-
+INST-01	PASS	"Vistula → Znaleziono: 22, pierwszy wiersz: ""Akademia Finansów i Biznesu Vistula"""	-	-	-
+INST-02	PASS	"Link ""Akademia Finansów i Biznesu Vistula"" ma target=""_blank"", href /wyszukiwarka-instytucji/instytucje/Akademia-Finans%C3%B3w-i-Biznesu-Vistula,30170"	-	-	-
+INST-03	PASS	"Link ""http://www.vistula.edu.pl/"" na stronie detali ma target=""_blank"" + rel=""noopener noreferrer"" — bezpieczne otwarcie"	-	-	-
 INST-04	PASS	Puste ?search= → licznik 2605 (pełna lista); URL po loadzie stripowany do ?limit=20&offset=0	-	-	-
-INST-05	PASS	Fraza ""nieistniejacax9y9z9qwerty"" → Znaleziono: 0, tabela ""Brak danych""	-	-	-
-INST-06	PASS	łódź=84, ŁÓDŹ=84 (wielkość liter ignorowana); ""  Vistula  "" (z spacjami) = Vistula = 22 (spacje na krańcach przycięte); Filia; = 204 (średnik jako znak specjalny nie łamie wyszukiwania)	-	-	-
-INST-07	FAIL	"lodz" (bez ogonków) → Znaleziono: 1; "łódź" (z ogonkami) → Znaleziono: 84. Backend nie wykonuje asciifolding / unaccent — użytkownik piszący "lodz" traci 83 wyniki, które faktycznie zawierają "Łódź" w nazwie	Medium	qa-runs/screenshots/INST-07.png	1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0&search=lodz 2) Zapisz licznik (1) 3) Otwórz ?search=łódź (URL-encoded) 4) Porównaj (84)
-INST-08	PASS	500-char query ""a…"" → 0 wyników, ""Brak danych"", brak crashu. XSS payload ""<script>alert(1)</script>"" wyrenderowany jako tekst, brak execution, brak <script> w DOM. limit=abc normalizowany na 20, offset=-1 na -20 (dziwna normalizacja, ale bez crashu i stack trace)	-	-	-
+INST-05	PASS	"Fraza ""nieistniejacax9y9z9qwerty"" → Znaleziono: 0, tabela ""Brak danych"""	-	-	-
+INST-06	PASS	"łódź=84, ŁÓDŹ=84 (wielkość liter ignorowana); ""  Vistula  "" (z spacjami) = Vistula = 22 (spacje na krańcach przycięte); Filia; = 204 (średnik jako znak specjalny nie łamie wyszukiwania)"	-	-	-
+INST-07	FAIL	"lodz (bez ogonków) → Znaleziono: 1; ""łódź"" (z ogonkami) → Znaleziono: 84. Backend nie wykonuje asciifolding / unaccent — użytkownik piszący ""lodz"" traci 83 wyniki, które faktycznie zawierają ""Łódź"" w nazwie"	Medium	qa-runs/screenshots/INST-07.png	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+2) W pole wyszukiwania wpisz frazę ""lodz"" (bez polskich znaków / bez ogonków)
+3) Poczekaj ~2–3s i zapisz licznik ""Znaleziono""
+4) Wyczyść pole (Cmd/Ctrl+A + Delete), wpisz ""łódź"" (z polskimi znakami), poczekaj i zapisz licznik referencyjny (~84)
+5) Porównaj oba liczniki"
+INST-08	PASS	"500-char query ""a…"" → 0 wyników, ""Brak danych"", brak crashu. XSS payload ""<script>alert(1)</script>"" wyrenderowany jako tekst, brak execution, brak <script> w DOM. limit=abc normalizowany na 20, offset=-1 na -20 (dziwna normalizacja, ale bez crashu i stack trace)"	-	-	-
 INST-09	PASS	IC checkbox → licznik 2605→579, URL &roles=1	-	-	-
 INST-10	PASS	wolnorynkowe checkbox → licznik 2605→202, URL &qualification_categories=5	-	-	-
-INST-11	PASS	Combobox Siedziba ""Warszawa"" → licznik 2605→350, URL &cities=Warszawa	-	-	-
+INST-11	PASS	"Combobox Siedziba ""Warszawa"" → licznik 2605→350, URL &cities=Warszawa"	-	-	-
 INST-12	PASS	roles=1 + qualification_categories=5 → licznik 148 (< min(579, 202) = 202), AND logic potwierdzona	-	-	-
-INST-13	PASS	Klik ikony (i) obok ""Zadania w ZSK"" otworzył modal role=dialog z nagłówkiem ""Pomoc"" i treścią: ""Instytucja certyfikująca (IC) – uprawniona instytucja…""	-	-	-
-INST-14	PASS	search=nieistniejaca_instytucja_xyz + roles=1 → Znaleziono: 0, ""Brak danych""	-	-	-
+INST-13	PASS	"Klik ikony (i) obok ""Zadania w ZSK"" otworzył modal role=dialog z nagłówkiem ""Pomoc"" i treścią: ""Instytucja certyfikująca (IC) – uprawniona instytucja…"""	-	-	-
+INST-14	PASS	"search=nieistniejaca_instytucja_xyz + roles=1 → Znaleziono: 0, ""Brak danych"""	-	-	-
 INST-15	PASS	Pobierz z ?search=Vistula → plik lista_instytucji.xlsx, 23 wierszy (header + 22 danych), zgodne z licznikiem 22	-	-	-
 INST-16	PASS	Pobierz bez filtrów → plik lista_instytucji.xlsx, 2606 wierszy (header + 2605 danych), zgodne z licznikiem 2605	-	-	-
-INST-17	FAIL	Przycisk ""Pobierz"" nie jest disabled przy licznikiku 0. Pobrany plik ma 1 wiersz × 1 kolumnę, komórka = None (pusty XLSX bez nawet nagłówka ""#/ID/Nazwa"")	Low	qa-runs/screenshots/INST-17.png	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0&search=nieistniejaca_xyz
-2) Zaobserwuj Znaleziono: 0
-3) Kliknij ""Pobierz""
-4) Otwórz plik: 1×1 arkusz, brak nagłówka, brak danych"
-INST-18	PASS	Klik Next na offset=0 → URL ?limit=20&offset=20, info paginacji ""21–40 z 2605"", tabela pokazała nowe wiersze	-	-	-
-INST-19	PASS	Na offset=0 przycisk ""Go to previous page"" ma disabled=true	-	-	-
-INST-20	PASS	Na offset=2600 przycisk ""Go to next page"" ma disabled=true, info paginacji ""2601–2605 z 2605"", tabela pokazała 5 wierszy	-	-	-
+INST-17	FAIL	"Przycisk ""Pobierz"" nie jest disabled przy licznikiku 0. Pobrany plik ma 1 wiersz × 1 kolumnę, komórka = None (pusty XLSX bez nawet nagłówka ""#/ID/Nazwa"")"	Low	qa-runs/screenshots/INST-17.png	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+2) W pole wyszukiwania wpisz frazę ""nieistniejaca_xyz"" i poczekaj aż licznik pokaże ""Znaleziono: 0""
+3) Kliknij przycisk ""Pobierz""
+4) Otwórz pobrany plik i sprawdź czy zawiera nagłówek kolumn"
+INST-18	PASS	"Klik Next na offset=0 → URL ?limit=20&offset=20, info paginacji ""21–40 z 2605"", tabela pokazała nowe wiersze"	-	-	-
+INST-19	PASS	"Na offset=0 przycisk ""Go to previous page"" ma disabled=true"	-	-	-
+INST-20	PASS	"Na offset=2600 przycisk ""Go to next page"" ma disabled=true, info paginacji ""2601–2605 z 2605"", tabela pokazała 5 wierszy"	-	-	-
 INST-21	PASS	Na wszystkich 3 rozmiarach okna (1280×720, 1440×900, 1920×1080): brak paska przewijania poziomego na dole okna, core UI (pole wyszukiwania, filtry, tabela wyników) w pełni widoczne bez ucinania	-	-	-
 INST-22	PASS	Okno 768×1024: brak paska przewijania poziomego, filtry i tabela wyników widoczne bez ucinania	-	-	-
-INST-23	PASS	Okno 375×812: brak paska przewijania poziomego, licznik "Znaleziono" i tabela wyników widoczne bez ucinania	-	-	-
+INST-23	PASS	"Okno 375×812: brak paska przewijania poziomego, licznik ""Znaleziono"" i tabela wyników widoczne bez ucinania"	-	-	-
 INST-24	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
 INST-25	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
 INST-26	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet)	-	-	-
