@@ -1,7 +1,7 @@
 ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wynik	ID buga	Notatki
 INST-01	Wyszukanie po nazwie zwraca listę pasujących instytucji	P1 · Krytyczny	Użytkownik na czystej stronie wyszukiwarki bez aktywnych filtrów	fraza używana w krokach: "Vistula"; alternatywy do testowania manualnego: "Warszawa", "AGH"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania z placeholderem ""Nazwa, fragment nazwy"" wpisz frazę ""Vistula""
-3) Poczekaj ~2–3 sekundy, aż lista sama się odświeży"	Licznik ""Znaleziono"" pokazuje wartość >0 a nazwy w wierszach zawierają frazę ""Vistula"" (case-insensitive)	PASS	-	-
+3) Poczekaj ~2–3 sekundy, aż lista sama się odświeży"	Licznik ""Znaleziono"" pokazuje wartość >0 a nazwy w wierszach zawierają frazę ""Vistula"""	PASS	-	-
 INST-02	Kliknięcie w nazwę instytucji otwiera jej szczegóły w nowej karcie	P1 · Krytyczny	Lista wyników wyświetla min. 1 instytucję (użyj ?search=Vistula)	pierwszy wiersz w tabeli (link ""Akademia Finansów i Biznesu Vistula"")	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz ""Vistula"" i poczekaj ~2–3s na odświeżenie listy
 3) Kliknij nazwę pierwszej instytucji w tabeli wyników (link ""Akademia Finansów i Biznesu Vistula"")
@@ -22,7 +22,7 @@ INST-06	Wyszukiwarka zwraca te same wyniki mimo różnic w pisowni frazy (wielko
 2) W pole wyszukiwania wpisz ""łódź"" (małe litery, z polskimi znakami), poczekaj ~3s, zapisz licznik (spodziewane 84)
 3) Wyczyść pole (Cmd/Ctrl+A + Delete), wpisz ""ŁÓDŹ"" (wielkie litery), poczekaj i porównaj licznik z krokiem 2
 4) Wyczyść, wpisz ""  Vistula  "" (2 spacje przed i po), poczekaj, sprawdź czy licznik = 22 (jak dla ""Vistula"" bez spacji)
-5) Wyczyść, wpisz ""Filia;"" (ze średnikiem), poczekaj, sprawdź licznik >0"	Wszystkie warianty (case, diakrytyki, spacje wiodące/końcowe, znaki specjalne z dataset) zwracają oczekiwane liczby bez błędu: łódź=ŁÓDŹ=84, ""  Vistula  ""=Vistula=22, Filia;=204	PASS	-	Trim spacji ✓, case-insensitive PL ✓, semikolon w query ✓. Bundle 4 patterns w 1 edge case
+5) Wyczyść, wpisz ""Filia;"" (ze średnikiem), poczekaj, sprawdź licznik >0"	Wszystkie warianty (case, diakrytyki, spacje wiodące/końcowe, znaki specjalne z dataset) zwracają oczekiwane liczby bez błędu: łódź=ŁÓDŹ=84, ""  Vistula  ""=Vistula=22, Filia;=204	PASS	-	Sprawdzone: przycinanie spacji na krańcach, ignorowanie wielkości liter dla polskich znaków, średnik jako znak specjalny nie łamie wyszukiwania. 4 warianty input w jednym przypadku brzegowym
 INST-07	Wyszukiwarka znajduje polskie nazwy gdy fraza wpisana bez polskich znaków	P2 · Wysoki	Baza zawiera ~84 instytucje z "Łódź" w nazwie jako referencja	"fraza używana w krokach: ""lodz"" (bez polskich znaków); referencja porównawcza: ""łódź"" = 84 wyniki"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania wpisz frazę ""lodz"" (bez polskich znaków / bez ogonków)
 3) Poczekaj ~2–3s i zapisz licznik ""Znaleziono""

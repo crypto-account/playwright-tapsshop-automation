@@ -4,7 +4,7 @@ INST-02	PASS	Link ""Akademia Finansów i Biznesu Vistula"" ma target=""_blank"",
 INST-03	PASS	Link ""http://www.vistula.edu.pl/"" na stronie detali ma target=""_blank"" + rel=""noopener noreferrer"" — bezpieczne otwarcie	-	-	-
 INST-04	PASS	Puste ?search= → licznik 2605 (pełna lista); URL po loadzie stripowany do ?limit=20&offset=0	-	-	-
 INST-05	PASS	Fraza ""nieistniejacax9y9z9qwerty"" → Znaleziono: 0, tabela ""Brak danych""	-	-	-
-INST-06	PASS	łódź=84, ŁÓDŹ=84 (case-insensitive); ""  Vistula  "" (z spacjami) = Vistula = 22 (trim); Filia; = 204 (semikolon jako znak specjalny nie łamie query)	-	-	-
+INST-06	PASS	łódź=84, ŁÓDŹ=84 (wielkość liter ignorowana); ""  Vistula  "" (z spacjami) = Vistula = 22 (spacje na krańcach przycięte); Filia; = 204 (średnik jako znak specjalny nie łamie wyszukiwania)	-	-	-
 INST-07	FAIL	"lodz" (bez ogonków) → Znaleziono: 1; "łódź" (z ogonkami) → Znaleziono: 84. Backend nie wykonuje asciifolding / unaccent — użytkownik piszący "lodz" traci 83 wyniki, które faktycznie zawierają "Łódź" w nazwie	Medium	qa-runs/screenshots/INST-07.png	1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0&search=lodz 2) Zapisz licznik (1) 3) Otwórz ?search=łódź (URL-encoded) 4) Porównaj (84)
 INST-08	PASS	500-char query ""a…"" → 0 wyników, ""Brak danych"", brak crashu. XSS payload ""<script>alert(1)</script>"" wyrenderowany jako tekst, brak execution, brak <script> w DOM. limit=abc normalizowany na 20, offset=-1 na -20 (dziwna normalizacja, ale bez crashu i stack trace)	-	-	-
 INST-09	PASS	IC checkbox → licznik 2605→579, URL &roles=1	-	-	-
