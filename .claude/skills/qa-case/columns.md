@@ -10,7 +10,7 @@ Szczegółowe reguły dla dwóch kolumn, które wymagają więcej miejsca niż i
 
 - **Zbyt lakoniczne**: `"Otwarcie profilu"`, `"Filtr IC"`, `"XSS"` — mówią WHAT bez EFFECT
 - **Zbyt techniczne**: `"Kliknięcie nazwy instytucji w tabeli otwiera stronę profilu z pełnymi danymi kontaktowymi (nazwa, NIP, adres)"` — szczegóły należą do Kroków / Oczekiwany rezultat, nie do tytułu
-- **English jargon**: nie „sanitized", „end-to-end", „empty state", „XSS", „keyboard-only", „focus visible", „target size", „screen reader", „assistive tech (AT)". Używaj: „nie zostaje wykonany", „pełny przepływ", „brak wyników", „złośliwy kod", „obsługa z klawiatury", „widoczny fokus", „rozmiar celu", „czytnik ekranu", „technologie wspomagające". Techniczne akronimy tolerowane tylko gdy to nazwa własna funkcji produktu (IC, WCAG, PZZJ, ARIA, NIP) LUB gdy komunikują logikę filtrów precyzyjniej niż PL opis: **AND / OR w nawiasie** dozwolone dla cases łączących filtry, np. „…pokazuje tylko wspólne wyniki (logika AND)" / „…pokazuje sumę wyników (logika OR)"
+- **English jargon**: nie „sanitized", „end-to-end", „empty state", „XSS", „keyboard-only", „focus visible", „target size", „screen reader", „assistive tech (AT)", „debounce", „viewport", „scrollWidth/clientWidth", „responsive breakpoint". Używaj: „nie zostaje wykonany", „pełny przepływ", „brak wyników", „złośliwy kod", „obsługa z klawiatury", „widoczny fokus", „rozmiar celu", „czytnik ekranu", „technologie wspomagające", „opóźnienie odświeżenia listy" LUB „poczekaj aż lista sama się odświeży", „rozmiar okna przeglądarki", „poziomy pasek przewijania", „rozmiar okna". Techniczne akronimy tolerowane tylko gdy to nazwa własna funkcji produktu (IC, WCAG, PZZJ, ARIA, NIP) LUB gdy komunikują logikę filtrów precyzyjniej niż PL opis: **AND / OR w nawiasie** dozwolone dla cases łączących filtry, np. „…pokazuje tylko wspólne wyniki (logika AND)" / „…pokazuje sumę wyników (logika OR)"
 - **WCAG kategorie zawsze po polsku** (używaj zrozumiałych synonimów, nie oficjalnych kalek): Perceivable → **czytelność treści** (nie „postrzegalność" — mniej zrozumiałe dla nie-a11y-specjalistów), Operable → **możliwość obsługi** / **obsługa z klawiatury**, Understandable → **zrozumiałość**, Robust → **solidność**. Prefiks tytułu WCAG cases: „Dostępność WCAG 2.2 AA — <kategoria PL>"
 - **Opisuj CORE, nie mechanikę**: tytuł ma mówić CO ma się dziać z punktu widzenia użytkownika / systemu, nie JAK to uruchomić. „Kliknięcie Pobierz pobiera plik X" (mechanika) → „Użytkownik pobiera bieżącą listę w formacie Excel" (core). „Klik nagłówka X przełącza sortowanie" (mechanika) → „Ponowne kliknięcie nagłówka X odwraca kierunek sortowania" (core z intencją). Testy nagłówkowe UI (np. sortowanie, filtrowanie) mogą zawierać element interakcji, ale muszą też komunikować EFEKT
 - **Konkretne metryki**: `4.5:1`, `24×24 CSS px`, `?limit=99999` — te idą do Kroków / Oczekiwany rezultat / Dane testowe
@@ -40,3 +40,14 @@ To daje pokrycie klas równoważnościowych (stolica vs małe miasto, uczelnia p
 ### Dla edge / injection case'ów
 
 Payload primary + 2-3 warianty ataku (SQLi, path traversal, template injection) w tym samym formacie.
+
+## Notatki
+
+Krótka uwaga testera. `-` gdy brak.
+
+### Zasady
+
+- **Self-explanatory** — czytelne dla testera bez developerskiego kontekstu. Notatka nie może wymagać znajomości technicznych skrótów żeby zrozumieć problem.
+- **Bez jargon**: nie „follow-up ticket", „edge case", „regression risk", „tech debt", „PR-worthy". Używaj: „osobny ticket do zgłoszenia później", „przypadek brzegowy", „ryzyko regresji", „dług techniczny", „wart osobnego PR-a".
+- **Jeśli notujesz uwagę poboczną** (side observation poza scope tego case'a): wyjaśnij (a) co konkretnie zaobserwowałeś, (b) dlaczego to problem, (c) że nie wpływa na wynik tego case'a. Wzór: „Uwaga poza scope tego testu: `<obserwacja>` (`<konsekwencja>`). Nie wpływa na wynik tego case'a — warto zgłosić osobnym ticketem `<sugerowana akcja>`".
+- **Techniczne obserwacje z automation** (np. „scrollWidth=360, clientWidth=360") przetłumacz na user-visible: „Zaobserwowano brak paska przewijania poziomego na 375×812". Techniczne pomiary zostawiaj w kodzie testu / logach, nie w Notatkach dla ludzi.

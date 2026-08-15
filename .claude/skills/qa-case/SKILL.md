@@ -47,7 +47,7 @@ Przeczytaj `.claude/skills/qa-case/best-practices.md`. Każdy generowany case mu
 **Ilość: 4–15 case'ów per story, twardy cap 25 total** dobrane pod złożoność ficzera:
 - 4 per story = floor pokrywający minimum coverage (1 positive + 2 negative + 1 edge z best-practices.md); niższa liczba = brak jakiejś kategorii
 - 15 per story = ceiling dla pojedynczej story
-- 25 total = twardy cap dla całego runu; powyżej split na osobne runy (per story lub per grupa stories)
+- 25 total = twardy cap **dla per-story cases** (INST-01…INST-N pokrywających user stories). Cross-cutting cases (a11y manual + responsive automated) to overhead na szczycie — analogicznie do manual, **nie liczą się do 25 cap**. Powyżej per-story 25 → split na osobne runy (per story lub per grupa stories)
 - Proste ficzery (formularz kontaktowy, toast) → 4–6 per story; wyszukiwarki/filtry → 6–10 per story; złożone flow → do 15 per story
 - Multi-story: preferuj **4–8 per story** żeby zmieścić się w 25 total przy 3+ stories; jeśli któraś story wymaga >8 i cap się pali → split runu
 - Nie dodawaj żeby dojść do maksa — jeśli 5 solidnych pokrywa story, zostaw 5
@@ -89,7 +89,11 @@ Feature name / suite NIE jest per-row column — żyje w Brief sekcji `.md`. Nie
 
 - **A11y (WCAG in scope)** — **TYLKO manual, brak automated**. OBOWIĄZKOWO 3 bundled manual cases (Perceivable / Operable / Understandable+AT). Pełna referencja: best-practices.md sekcja „Manual WCAG 2.2 AA checks". Automated Playwright a11y checks NIE są generowane — dają false confidence przy niepełnym pokryciu real WCAG audytu. Real a11y jest zawsze manualny.
   - **Priorytet WCAG cases: ZAWSZE `P1 · Krytyczny`** — compliance/legal risk. Dla portali `.gov.pl` i innych regulowanych (banking, healthcare) to wymóg prawny (Ustawa o dostępności cyfrowej / EU EAA / ADA). Nawet gdy feature P2, a11y cases dostają P1.
-- **Responsive (mobile/tablet/desktop)** — dla portali publicznych / e-commerce / consumer-facing sites **ZAWSZE required**, niezależnie od user story. >60% polskiego web traffic to mobile. Generuj **2 automated cases**: mobile 375px + tablet 768px (desktop pokryty baseline przez pozostałe cases w default viewport). Każdy testuje że core flow działa bez horizontal overflow. Playwright `browser_resize(w,h)` + `browser_navigate` + assert `scrollWidth ≤ innerWidth`. **Priorytet dziedziczy z feature** (P1 feature → P1 responsive). Admin tools / desktop-only apps → pomiń (musi być explicit w anti-scope, inaczej domyślnie generowane).
+- **Responsive (desktop/tablet/mobile)** — dla portali publicznych / e-commerce / consumer-facing sites **ZAWSZE required**, niezależnie od user story. >60% polskiego web traffic to mobile, ale desktop to nadal główny kanał dla portali gov/edu. Generuj **3 automated cases w kolejności desktop → tablet → mobile**:
+  1. **Desktop bundled** — 3 breakpointy w 1 case: 1280×720 (małe laptopy, dolny próg), 1440×900 (MBP default), 1920×1080 (FHD monitor). Assertion per breakpoint: brak horizontal overflow + core UI (search/filtry/lista) widoczne.
+  2. **Tablet** — 768×1024 (iPad portrait). Assertion: brak horizontal overflow + core flow działa.
+  3. **Mobile** — 375×812 (iPhone base). Assertion: j.w.
+  Playwright (implementation detail, NIE w Krokach): `browser_resize(w,h)` + `browser_navigate` + assert `scrollWidth ≤ clientWidth`. **Kroki muszą używać user-visible language** — „ustaw okno przeglądarki na 375×812 (DevTools → Toggle device toolbar)", „sprawdź czy nie ma poziomego paska przewijania na dole okna", „widoczne bez ucinania: X, Y, Z". NIE pisz w Krokach „porównaj document.documentElement.scrollWidth z clientWidth" — to jargon JS DOM API, manualny tester tego nie zrobi. **Priorytet dziedziczy z feature** (P1 feature → P1 responsive). Admin tools / desktop-only apps → pomiń mobile+tablet, zostaw tylko desktop bundled (musi być explicit w anti-scope, inaczej domyślnie generowane 3).
 
 Manual cases NIE liczą się do case-count budget (4–15) — dochodzą jako uzupełnienie automated.
 
