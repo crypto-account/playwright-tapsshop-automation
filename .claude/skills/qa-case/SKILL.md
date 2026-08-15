@@ -66,7 +66,7 @@ ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wyni
 - `Tytuł` — patrz `.claude/skills/qa-case/columns.md` sekcja Tytuł (6–10 słów, PL, format czynność+obiekt+efekt, bez English jargonu i konkretnych metryk)
 - `Priorytet` = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski` (kod z przodu żeby Excel sort działał po wadze)
 - `Warunki wstępne` = stan startowy który musi być spełniony (Given)
-- `Dane testowe` — patrz `.claude/skills/qa-case/columns.md` sekcja Dane testowe (dla wyszukiwarek/filtrów z alternatywami: explicit label „X używana w krokach: 'val'; alternatywy do testowania manualnego: 'val2', 'val3'"; Kroki referencują przez „wpisz frazę z Dane testowe ('val')")
+- `Dane testowe` — patrz `.claude/skills/qa-case/columns.md` sekcja Dane testowe (dla wyszukiwarek/filtrów z alternatywami: explicit label „X używana w krokach: 'val'; alternatywy do testowania manualnego: 'val2', 'val3'"; Kroki wstawiają wartość INLINE, np. „wpisz frazę 'val'" — bez odwołania „z Dane testowe")
 - `Kroki` = numerowane, imperatywne, deterministyczne, bez weryfikacji. **URL-e zawsze pełne** (`https://...`), nie relatywne ścieżki. **UI-driven, nie URL-driven** — krok 1 = otwórz base URL bez query params; kolejne kroki = akcje w UI (wpisywanie, klik, zaznaczenie), żeby tester mógł manualnie odtworzyć bez ręcznego konstruowania URL. URL z query params tylko gdy URL jest przedmiotem testu (injection/deep-link) lub jako setup shortcut z uzasadnieniem w Notatki. Pełna reguła + wyjątki: `best-practices.md` sekcja Steps → „UI-driven, not URL-driven". Format zależy od typu pliku — patrz krok 6.
 - `Oczekiwany rezultat` = JEDEN obserwowalny efekt (Then)
 

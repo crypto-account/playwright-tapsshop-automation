@@ -33,7 +33,7 @@ Konkretne wartości lub klasy równoważnościowe (`<dowolny poprawny email>`). 
 <nazwa> używana w krokach: "X"; alternatywy do testowania manualnego: "Y", "Z", "W"
 ```
 
-Kroki referencują wartość zdaniem: „W pole wyszukiwania wpisz frazę **z Dane testowe** (""X"")". Tester widzi którą wartość zreplikować bez skoku wzroku (wartość in-line), a alternatywy są jasno oznaczone jako do testowania manualnego (największe miasta, popularne instytucje, różne kategorie).
+Kroki wstawiają wartość **inline** — po prostu „W pole wyszukiwania wpisz frazę ""X""" (bez odwołania „z Dane testowe"). Explicit label w Dane testowe jednoznacznie komunikuje która wartość jest deterministyczna (ta w Krokach) a które są alternatywami do testowania manualnego (największe miasta, popularne instytucje, różne kategorie).
 
 To daje pokrycie klas równoważnościowych (stolica vs małe miasto, uczelnia publiczna vs fundacja, popularna vs egzotyczna nazwa) bez enumeracji osobnych case'ów i bez łamania atomicity (case testuje jedną wartość deterministycznie; alternatywy = manualne rozszerzenie).
 
