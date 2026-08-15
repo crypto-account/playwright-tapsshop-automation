@@ -37,14 +37,21 @@ Every text-search input MUST have coverage for the 8 patterns below. **Bundle in
 
 1. **Puste zapytanie** — `?search=` or empty input; expected: full unfiltered list OR explicit rejection with clear message
 2. **Fraza bez wyników** — nonsense string (`nieistniejaca_xyz123`); expected: empty state with clear message („Brak danych"), counter = 0
-3. **Polskie diakrytyki + case-insensitivity** — `łódź` = `ŁÓDŹ` (same count); optional diacritic-stripped `lodz` → `Łódź` **only if spec promises normalization** (Postgres `unaccent` / Elasticsearch `asciifolding` — częsty PL UX pattern dla użytkowników bez polskiej klawiatury / mobile; potwierdź w spec zanim uznasz brak dopasowania za bug)
+3a. **Polskie diakrytyki — case-insensitivity zachowując diakrytyki** — `łódź` = `ŁÓDŹ` (same count); mandatory dla PL portali (standardowa cecha silnika DB / search backendu)
+3b. **Polskie diakrytyki — asciifolding / diacritic-stripping** — `lodz` → `Łódź` (same count); wymaga explicit backend normalization (Postgres `unaccent` / Elasticsearch `asciifolding`). Częsty PL UX pattern dla użytkowników bez polskiej klawiatury / mobile. **Testuj OSOBNYM CASE, nie bundluj z 3a** — asciifolding to distinct backend feature i częsty bug (jeden może działać bez drugiego). Jeśli spec nie mówi wprost o normalizacji, i tak testuj jako expected PASS dla PL `.gov.pl` / user-facing sites (regulatory + UX standard); ewentualny brak zgłoś jako bug z Notatką „potwierdź z produkt owner priorytet"
 4. **Znaki specjalne z realnego datasetu** — `"quoted"`, `Filia; XYZ`, `AGH im. St. Staszica`; always pick from actual data, don't fabricate
 5. **Bardzo długi ciąg** — 500+ chars random; expected: no crash, graceful truncation OR „no match"
 6. **Spacje wiodące/końcowe** — `"  Vistula  "`; expected: trim → same result as `"Vistula"`
 7. **Różna wielkość liter** — `vistula` = `VISTULA` = `Vistula` (same count)
 8. **URL param injection** — `?search=<script>alert(1)</script>`, `?limit=abc`, `?offset=-1`, null bytes, extreme lengths; expected: sanitized / graceful rejection, no reflected XSS, no stack trace, no crash. **Applies to filters and pagination too**
 
-**Recommended bundling**: 1 case łączy patterns 3+4+6+7 (natural input variance) + 1 case łączy patterns 5+8 (attack surface). Patterns 1, 2 usually as separate negative cases with dedicated empty-state assertions.
+**Recommended bundling**:
+- 1 case bundles patterns 3a + 4 + 6 + 7 (natural input variance — case, diakrytyki-preserve, spaces, special chars). Bundle bo wszystkie 4 są cechą tego samego silnika text-matching; jeden pass/fail zwykle korelujący.
+- **1 dedicated case for pattern 3b (asciifolding)** — SEPARATE from 3a. Rationale: asciifolding to osobny backend feature (`unaccent` / `asciifolding`); często jeden bug isolated od pozostałych normalizacji. Bundle z 3a zaciera info która sub-normalizacja pada.
+- 1 case bundles patterns 5 + 8 (attack surface — długi input + URL injection).
+- Patterns 1, 2 as separate negative cases with dedicated empty-state assertions.
+
+Razem: 4 edge cases + 2 negative = 6 cases pokrywających text-search input coverage.
 
 ## Coverage — for every feature, aim to cover
 
