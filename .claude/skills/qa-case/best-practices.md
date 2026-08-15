@@ -28,7 +28,7 @@ Every generated case MUST satisfy every rule below. Cases that fail the checklis
 - Explicit values when they drive the outcome (`email: qa+dupe@example.com`, `quantity: -1`, `password: 7chars!`)
 - Mark equivalence classes when any value in the class works: `<any valid email>`, `<random 33-char string>`, `<any P1 category>`
 - Never leave data implicit if it determines pass/fail
-- **For text-search inputs**: cover Polish diacritics + case-insensitivity (`łódź` → `Łódź`) and real-world special chars from the actual dataset (`"quoted names"`, `Filia; XYZ`, `AGH im. St. Staszica`). **Bundle them into one edge case, not one case per character.**
+- **For text-search inputs**: cover Polish diacritics with case-insensitivity (`łódź` → `Łódź`) **AND diacritic-stripped variant if spec allows** (`lodz` → `Łódź` — częsty PL UX pattern, użytkownicy piszą bez ogonków na klawiaturze angielskiej / mobile; wymaga explicit backend normalization typu Postgres `unaccent` / Elasticsearch `asciifolding`; potwierdź w spec czy produkt to obiecuje zanim uznasz brak dopasowania za bug) and real-world special chars from the actual dataset (`"quoted names"`, `Filia; XYZ`, `AGH im. St. Staszica`). **Bundle them into one edge case, not one case per character.**
 - **URL params as attack surface**: for any URL-driven state (search, filter, pagination), include at least one case with a value injected directly in the URL — script tags (`?search=<script>alert(1)</script>`), invalid types (`?limit=abc`, `?offset=-1`), null bytes, extreme lengths. Backend must sanitize / reject gracefully — no crash, no reflected XSS, no leaked stack trace. Can be bundled with another edge case.
 
 ## Coverage — for every feature, aim to cover
