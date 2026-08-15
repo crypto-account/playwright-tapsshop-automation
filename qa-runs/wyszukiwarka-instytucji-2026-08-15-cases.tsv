@@ -1,5 +1,5 @@
 ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wynik	ID buga	Notatki
-INST-01	Wyszukanie po nazwie zwraca listę pasujących instytucji	P1 · Krytyczny	Użytkownik na czystej stronie wyszukiwarki bez aktywnych filtrów	fraza używana w krokach: "Vistula"; alternatywy do exploratory: "Warszawa", "AGH"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-01	Wyszukanie po nazwie zwraca listę pasujących instytucji	P1 · Krytyczny	Użytkownik na czystej stronie wyszukiwarki bez aktywnych filtrów	fraza używana w krokach: "Vistula"; alternatywy do testowania manualnego: "Warszawa", "AGH"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W pole wyszukiwania z placeholderem ""Nazwa, fragment nazwy"" wpisz frazę z Dane testowe (""Vistula"")
 3) Poczekaj ~2–3 sekundy, aż lista sama się odświeży"	Licznik ""Znaleziono"" pokazuje wartość >0 a nazwy w wierszach zawierają frazę ""Vistula"" (case-insensitive)	PASS	-	-
 INST-02	Kliknięcie w nazwę instytucji otwiera jej szczegóły w nowej karcie	P1 · Krytyczny	Lista wyników wyświetla min. 1 instytucję (użyj ?search=Vistula)	pierwszy wiersz w tabeli (link ""Akademia Finansów i Biznesu Vistula"")	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
@@ -35,7 +35,7 @@ INST-09	Filtr Zadania w ZSK zawęża listę wyników	P1 · Krytyczny	Wyszukiwark
 2) W sekcji filtrów ""Zadania w ZSK"" zaznacz checkbox ""Instytucja certyfikująca (IC)"""	Licznik ""Znaleziono"" spada z 2605 do <2605, URL zawiera ""&roles=1""	PASS	-	Rzeczywisty: 2605→579
 INST-10	Filtr Kategoria kwalifikacji zawęża listę wyników	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów, licznik 2605	filtr: "wolnorynkowe" (Edukacja pozaformalna)	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) W sekcji filtrów ""Kategoria kwalifikacji"" (grupa ""Edukacja pozaformalna"") zaznacz checkbox ""wolnorynkowe"""	Licznik spada z 2605 do <2605, URL zawiera ""&qualification_categories=5""	PASS	-	Rzeczywisty: 2605→202
-INST-11	Filtr Siedziba pokazuje tylko instytucje z wybranego miasta	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów	"miejscowość używana w krokach: ""Warszawa""; alternatywy do exploratory: ""Kraków"", ""Łódź"", ""Poznań"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
+INST-11	Filtr Siedziba pokazuje tylko instytucje z wybranego miasta	P1 · Krytyczny	Wyszukiwarka bez aktywnych filtrów	"miejscowość używana w krokach: ""Warszawa""; alternatywy do testowania manualnego: ""Kraków"", ""Łódź"", ""Poznań"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 2) Kliknij combobox ""Nazwa miejscowości..."" w sekcji ""Siedziba instytucji certyfikującej""
 3) Wpisz min. 3 znaki miejscowości z Dane testowe (""Warszawa"")
 4) Z listy podpowiedzi wybierz odpowiednią opcję (""Warszawa"")"	Licznik spada do <2605, URL zawiera ""&cities=Warszawa""	PASS	-	Rzeczywisty: 2605→350
