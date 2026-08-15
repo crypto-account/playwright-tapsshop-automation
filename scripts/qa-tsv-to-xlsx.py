@@ -8,10 +8,11 @@ Usage:
 
 Reads:
     <base>-cases.tsv, <base>-report.tsv
+    <base>-bugs.tsv   (optional — adds a third "Bug tracker" sheet)
     <base>.md         (optional — provides Feature / Priority / Date for the title bar)
 
 Writes:
-    <base>.xlsx       (two sheets: "Test cases", "Execution report")
+    <base>.xlsx       (2 or 3 sheets: "Test cases", "Execution report", optionally "Bug tracker")
 """
 
 import csv, io, re, sys
@@ -50,10 +51,12 @@ CATEGORY_PLAIN_COLUMNS = {"Priorytet", "Priority"}
 RICH_TEXT_COLUMNS = {
     "Kroki", "Steps",
     "Reprodukcja", "Repro",
+    "Kroki reprodukcji",
     "Warunki wstępne", "Preconditions",
     "Dane testowe", "Test Data",
     "Oczekiwany rezultat", "Expected Result",
     "Rzeczywisty rezultat", "Actual Result",
+    "Środowisko", "URL", "Wpływ na użytkownika",
 }
 
 # Rich-text fonts — InlineFont accepts colours as AARRGGBB
@@ -116,6 +119,17 @@ REPORT_WIDTHS = {
     "Zrzut ekranu": 26, "Reprodukcja": 55,
     # Legacy English still recognised
     "Actual Result": 60, "Severity": 12, "Screenshot": 26, "Repro": 55,
+}
+BUGS_WIDTHS = {
+    "ID": 14, "Tytuł": 42, "Priorytet": 14, "Ważność": 12,
+    "Powiązany scenariusz testowy": 14,
+    "Data zgłoszenia": 14,
+    "URL": 55, "Przeglądarka": 20, "System operacyjny": 18, "Rozdzielczość": 14,
+    "Kroki reprodukcji": 55,
+    "Oczekiwany rezultat": 42, "Rzeczywisty rezultat": 42,
+    "Screenshot": 26, "Wpływ na użytkownika": 45,
+    # legacy Waga still recognized
+    "Waga": 12,
 }
 
 
@@ -273,9 +287,152 @@ def category_fills_for(headers: list[str], mapping: dict[str, dict]) -> dict[int
     return out
 
 
+# Section header for per-bug tabs (row between title bar and field rows)
+SECTION_FILL = PatternFill("solid", fgColor="D9E1F2")  # very light blue-gray, subtle divider
+SECTION_FONT = Font(name="Calibri", size=11, bold=True, color="305496")  # dark blue text
+SECTION_ALIGN = Alignment(horizontal="left", vertical="center", indent=1)
+
+# Label cell style for bug tabs (subtle gray, dark text — not shouty)
+BUG_LABEL_FILL = PatternFill("solid", fgColor="F2F2F2")
+BUG_LABEL_FONT = Font(name="Calibri", size=10, bold=True, color="1F3864")
+BUG_LABEL_ALIGN = Alignment(horizontal="left", vertical="top", indent=1, wrap_text=True)
+
+# Ordered sections mapping — each section groups a set of field headers
+BUG_SECTIONS = [
+    ("Metadane", ["ID", "Tytuł", "Priorytet", "Ważność", "Powiązany scenariusz testowy", "Data zgłoszenia"]),
+    ("Środowisko", ["URL", "Przeglądarka", "System operacyjny", "Rozdzielczość"]),
+    ("Reprodukcja", ["Kroki reprodukcji", "Oczekiwany rezultat", "Rzeczywisty rezultat", "Screenshot"]),
+    ("Analiza wpływu", ["Wpływ na użytkownika"]),
+]
+
+
+def add_bug_tabs(wb, bugs_rows: list[list[str]]):
+    """Render each bug row as a separate vertical (label | value) tab with sections."""
+    if len(bugs_rows) < 2:
+        return
+    headers = bugs_rows[0]
+    id_idx = headers.index("ID") if "ID" in headers else 0
+    # Prefer new "Ważność" column, fall back to legacy "Waga"
+    if "Ważność" in headers:
+        waga_idx = headers.index("Ważność")
+    elif "Waga" in headers:
+        waga_idx = headers.index("Waga")
+    else:
+        waga_idx = None
+    title_idx = headers.index("Tytuł") if "Tytuł" in headers else 1
+
+    # Tab color by Waga
+    waga_colors = {
+        "Critical": "C00000",
+        "High": "E97132",
+        "Medium": "FFC000",
+        "Low": "A6A6A6",
+    }
+
+    for bug_row in bugs_rows[1:]:
+        bug_id = bug_row[id_idx] if id_idx < len(bug_row) else "BUG"
+        tab_name = re.sub(r'[\\/?*\[\]]', '-', bug_id)[:31]
+        waga = bug_row[waga_idx] if waga_idx is not None and waga_idx < len(bug_row) else ""
+        ws = wb.create_sheet(tab_name)
+        ws.sheet_properties.tabColor = waga_colors.get(waga, "C00000")
+
+        # Title bar (row 1)
+        title = bug_row[title_idx] if title_idx < len(bug_row) else bug_id
+        ws.cell(row=1, column=1, value=f"{bug_id} — {title}")
+        ws.merge_cells("A1:B1")
+        title_cell = ws.cell(row=1, column=1)
+        title_cell.fill = TITLE_FILL
+        title_cell.font = TITLE_FONT
+        title_cell.alignment = TITLE_ALIGN
+        ws.row_dimensions[1].height = 32
+
+        # Vertical layout — 2 columns
+        # A width = 32 to accommodate longest label "Powiązany scenariusz testowy" (28 chars) w 10pt
+        ws.column_dimensions["A"].width = 32
+        ws.column_dimensions["B"].width = 85
+
+        # Field lookup for random access
+        field_values = {h: (bug_row[i] if i < len(bug_row) else "") for i, h in enumerate(headers)}
+
+        r = 2  # current row cursor
+        for section_name, section_fields in BUG_SECTIONS:
+            # Section header row (merged, medium blue)
+            sec_cell = ws.cell(row=r, column=1, value=section_name)
+            ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
+            sec_cell.fill = SECTION_FILL
+            sec_cell.font = SECTION_FONT
+            sec_cell.alignment = SECTION_ALIGN
+            sec_cell.border = BORDER
+            ws.row_dimensions[r].height = 24
+            r += 1
+
+            # Field rows within section
+            single_field = len(section_fields) == 1
+            for field in section_fields:
+                if field not in field_values:
+                    continue
+                value = field_values[field]
+
+                if single_field:
+                    # Skip label — merge value across A:B (label redundant with section header)
+                    val_cell = ws.cell(row=r, column=1, value=value)
+                    ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
+                    val_cell.border = BORDER
+                    val_cell.font = BODY_FONT
+                    val_cell.alignment = Alignment(horizontal="left", vertical="top", indent=1, wrap_text=True)
+                else:
+                    label_cell = ws.cell(row=r, column=1, value=field)
+                    label_cell.fill = BUG_LABEL_FILL
+                    label_cell.font = BUG_LABEL_FONT
+                    label_cell.alignment = BUG_LABEL_ALIGN
+                    label_cell.border = BORDER
+
+                    val_cell = ws.cell(row=r, column=2, value=value)
+                    val_cell.border = BORDER
+                    val_cell.font = BODY_FONT
+                    val_cell.alignment = BODY_ALIGN_TOP
+
+                # Ważność / Waga (severity) row color
+                if field in ("Ważność", "Waga") and value in SEVERITY_FILL:
+                    val_cell.fill = SEVERITY_FILL[value]
+                    if value == "Critical":
+                        val_cell.font = SEVERITY_FONT_WHITE
+                    else:
+                        val_cell.font = CATEGORY_FONT
+                    val_cell.alignment = BODY_ALIGN_CENTER
+                # Priorytet row color (case priority palette)
+                elif field == "Priorytet" and value in PRIORITY_FILL:
+                    val_cell.fill = PRIORITY_FILL[value]
+                    val_cell.font = BODY_FONT_BOLD
+                    val_cell.alignment = BODY_ALIGN_CENTER
+
+                # Rich text
+                if field in RICH_TEXT_COLUMNS and isinstance(value, str) and value and value != "-":
+                    rt, _href = build_rich_text(value, None)
+                    val_cell.value = rt
+
+                # Row height: min 22pt (accommodates label wrap); higher for long values
+                # For merged (single_field) cells, effective width ≈ A+B ≈ 117 units → chars/line ≈ 100
+                # For 2-column layout, value uses column B ≈ 85 units → chars/line ≈ 70
+                chars_per_line = 100 if single_field else 70
+                base_lines = 1
+                if isinstance(value, str) and value:
+                    base_lines = value.count('\n') + 1 + max(0, (len(value) - 1) // chars_per_line)
+                # Label wrap check (only for 2-col mode)
+                label_lines = 1 if single_field else max(1, (len(field) - 1) // 30 + 1)
+                lines = max(base_lines, label_lines)
+                ws.row_dimensions[r].height = max(22, min(220, lines * 16))
+
+                r += 1
+
+        ws.sheet_view.showGridLines = False
+
+
 def build(base: Path):
     cases_rows = load_tsv(base.with_name(base.name + "-cases.tsv"))
     report_rows = load_tsv(base.with_name(base.name + "-report.tsv"))
+    bugs_path = base.with_name(base.name + "-bugs.tsv")
+    bugs_rows = load_tsv(bugs_path) if bugs_path.exists() else None
     meta = load_meta(base.with_suffix(".md")) if base.suffix else load_meta(base.with_name(base.name + ".md"))
 
     wb = Workbook()
@@ -302,9 +459,12 @@ def build(base: Path):
         meta,
     )
 
+    if bugs_rows:
+        add_bug_tabs(wb, bugs_rows)
+
     out = base.with_suffix(".xlsx") if base.suffix else base.with_name(base.name + ".xlsx")
     wb.save(out)
-    print(f"Wrote {out}")
+    print(f"Wrote {out}" + (f" (with Bug tracker: {len(bugs_rows)-1} bugs)" if bugs_rows else ""))
 
 
 if __name__ == "__main__":

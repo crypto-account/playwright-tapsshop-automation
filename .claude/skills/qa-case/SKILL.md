@@ -7,14 +7,16 @@ Twórz test casey dla JEDNEGO ficzera (może pokrywać 1–N powiązanych user s
 
 ## Output
 
-4 pliki w `qa-runs/`, wszystkie dzielą base slug `<feature-slug>-<YYYY-MM-DD>`:
+Pliki w `qa-runs/`, dzielą base slug `<feature-slug>-<YYYY-MM-DD>`:
 
-1. `<slug>.xlsx` — **primary deliverable dla arkusza**. Dwie zakładki: `Test cases` + `Execution report`. Stylowany header (ciemnoniebieski #305496, biały bold, freeze row 1), wrap-text na długich cellkach, zebra striping, color-coded Priorytet / Wynik / Waga, cienkie szare bordery. Otwiera się natywnie w Excelu i Sheets.
+1. `<slug>.xlsx` — **primary deliverable dla arkusza**. Zakładki: `Test cases` + `Execution report` + **N zakładek per-bug** (jeśli są FAIL cases — każdy bug jako osobna zakładka w układzie vertykalnym, label | value; tab color = kolor Wagi: czerwony Critical, pomarańcz High, żółty Medium, szary Low). Stylowany header (ciemnoniebieski #305496, biały bold, freeze row 1), wrap-text na długich cellkach, zebra striping, color-coded Priorytet / Wynik / Waga, cienkie szare bordery. Otwiera się natywnie w Excelu i Sheets.
 2. `<slug>.md` — human-readable. Brief + oba TSV bloki inline, single-line steps.
 3. `<slug>-cases.tsv` — raw TSV (multi-line quoted per RFC 4180). Do git diff i importu do Sheets przez `File → Import`.
 4. `<slug>-report.tsv` — raw TSV execution report. Same rationale.
+5. `<slug>-bugs.tsv` (opcjonalnie, tylko przy FAIL) — bug tracker TSV (aggregated, jeden plik z N wierszami, do git diff / import do Sheets). W XLSX renderuje się jako **N zakładek per-bug** (nie jedna zbiorcza) w układzie vertykalnym.
+6. `bugs/<BUG-ID>.md` (opcjonalnie, tylko przy FAIL) — per-bug markdown (jeden plik / bug), standalone kopiowalny do Jira / GitHub. Katalog `qa-runs/bugs/`.
 
-Wszystkie 4 pliki mają te same wiersze — trzy prezentacje tych samych danych.
+Pliki 3-4 mają te same wiersze co zakładki 1-2 w XLSX. Bug tracker (5+6) generowane w kroku 5.5 z FAIL rows.
 
 ## Kroki
 
@@ -126,10 +128,31 @@ Resetuj stan między case'ami (fresh navigation, clear inputs) — cases muszą 
 Po wykonaniu każdego case update outcome columns w cases sheet:
 
 - `Wynik` = ta sama wartość co `Status` w execution report
-- `ID buga` = ticket ID dla FAIL, `-` inaczej
+- `ID buga` = `<FEATURE-PREFIX>-BR-<NN>` dla FAIL (patrz krok 5.5 — sekwencyjnie w kolejności ID case'a), `-` inaczej
 - `Notatki` = krótka uwaga, `-` inaczej
 
 **`Wynik` w cases i `Status` w report MUSZĄ się zgadzać.** Jeśli zmieniasz jedno, zmień drugie.
+
+### 5.5. Wygeneruj bug reporty (auto z FAIL rows)
+
+Dla **każdego FAIL row** w execution report — bez pytania usera — generuj:
+
+1. **Row w `qa-runs/<slug>-bugs.tsv`** (bug tracker, jeden plik / run). Kolumny (15, dokładna kolejność):
+   ```
+   ID	Tytuł	Priorytet	Ważność	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
+   ```
+   Zgrupowane w 4 sekcje w XLSX per-bug tab: **Metadane** (6) · **Środowisko** (4) · **Reprodukcja** (4) · **Analiza wpływu** (1).
+   **Priorytet vs Ważność**: Priorytet = biznesowa pilność (P1/P2/P3), Ważność = techniczny impact (Critical/High/Medium/Low). Dwie osi — bug może być Critical severity + Low priority (crash w edge case) lub odwrotnie (typo na demo dla CEO = P1 + Low severity).
+2. **Plik `qa-runs/bugs/<BUG-ID>.md`** (per-bug markdown, standalone kopiowalny do Jira/GitHub).
+
+Pełna referencja formatu, kolumn i markdown template: `.claude/skills/qa-case/bug-report.md`.
+
+Kluczowe:
+- **ID bugów sekwencyjne** — `<FEATURE-PREFIX>-BR-01`, `-02`, … w kolejności ID case'a rosnąco
+- **9 z 10 kolumn to KOPIA danych** z cases sheet + execution report (bez re-generowania)
+- **Jedyne nowe pole: „Wpływ na użytkownika"** — 1-2 zdania „kogo boli i jak często" (nie duplikuj w Notatki w cases sheet)
+- Sortowanie bug tracker: Waga malejąco (Critical → Low), potem ID rosnąco
+- Utwórz katalog: `mkdir -p qa-runs/bugs`
 
 ### 6. Zapisz pliki
 
