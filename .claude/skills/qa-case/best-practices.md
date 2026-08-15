@@ -28,8 +28,20 @@ Every generated case MUST satisfy every rule below. Cases that fail the checklis
 - Explicit values when they drive the outcome (`email: qa+dupe@example.com`, `quantity: -1`, `password: 7chars!`)
 - Mark equivalence classes when any value in the class works: `<any valid email>`, `<random 33-char string>`, `<any P1 category>`
 - Never leave data implicit if it determines pass/fail
-- **For text-search inputs**: cover Polish diacritics with case-insensitivity (`łódź` → `Łódź`) **AND diacritic-stripped variant if spec allows** (`lodz` → `Łódź` — częsty PL UX pattern, użytkownicy piszą bez ogonków na klawiaturze angielskiej / mobile; wymaga explicit backend normalization typu Postgres `unaccent` / Elasticsearch `asciifolding`; potwierdź w spec czy produkt to obiecuje zanim uznasz brak dopasowania za bug) and real-world special chars from the actual dataset (`"quoted names"`, `Filia; XYZ`, `AGH im. St. Staszica`). **Bundle them into one edge case, not one case per character.**
-- **URL params as attack surface**: for any URL-driven state (search, filter, pagination), include at least one case with a value injected directly in the URL — script tags (`?search=<script>alert(1)</script>`), invalid types (`?limit=abc`, `?offset=-1`), null bytes, extreme lengths. Backend must sanitize / reject gracefully — no crash, no reflected XSS, no leaked stack trace. Can be bundled with another edge case.
+### Text-search inputs — consolidated edge checklist
+
+Every text-search input MUST have coverage for the 8 patterns below. **Bundle into 1–2 edge cases, not one case per pattern** (equivalence-class discipline — see Coverage → Edge). Cross-cutting note: patterns 5 and 8 apply to filters and pagination too, not just search.
+
+1. **Puste zapytanie** — `?search=` or empty input; expected: full unfiltered list OR explicit rejection with clear message
+2. **Fraza bez wyników** — nonsense string (`nieistniejaca_xyz123`); expected: empty state with clear message („Brak danych"), counter = 0
+3. **Polskie diakrytyki + case-insensitivity** — `łódź` = `ŁÓDŹ` (same count); optional diacritic-stripped `lodz` → `Łódź` **only if spec promises normalization** (Postgres `unaccent` / Elasticsearch `asciifolding` — częsty PL UX pattern dla użytkowników bez polskiej klawiatury / mobile; potwierdź w spec zanim uznasz brak dopasowania za bug)
+4. **Znaki specjalne z realnego datasetu** — `"quoted"`, `Filia; XYZ`, `AGH im. St. Staszica`; always pick from actual data, don't fabricate
+5. **Bardzo długi ciąg** — 500+ chars random; expected: no crash, graceful truncation OR „no match"
+6. **Spacje wiodące/końcowe** — `"  Vistula  "`; expected: trim → same result as `"Vistula"`
+7. **Różna wielkość liter** — `vistula` = `VISTULA` = `Vistula` (same count)
+8. **URL param injection** — `?search=<script>alert(1)</script>`, `?limit=abc`, `?offset=-1`, null bytes, extreme lengths; expected: sanitized / graceful rejection, no reflected XSS, no stack trace, no crash. **Applies to filters and pagination too**
+
+**Recommended bundling**: 1 case łączy patterns 3+4+6+7 (natural input variance) + 1 case łączy patterns 5+8 (attack surface). Patterns 1, 2 usually as separate negative cases with dedicated empty-state assertions.
 
 ## Coverage — for every feature, aim to cover
 
