@@ -9,10 +9,10 @@ Twórz test casey dla JEDNEGO ficzera (może pokrywać 1–N powiązanych user s
 
 Pliki w `qa-runs/`, dzielą base slug `<feature-slug>-<YYYY-MM-DD>`:
 
-1. `<slug>.xlsx` — **primary deliverable dla arkusza**. Zakładki: `Test cases` + `Execution report` + **N zakładek per-bug** (jeśli są FAIL cases — każdy bug jako osobna zakładka w układzie vertykalnym, label | value; tab color = kolor Wagi: czerwony Critical, pomarańcz High, żółty Medium, szary Low). Stylowany header (ciemnoniebieski #305496, biały bold, freeze row 1), wrap-text na długich cellkach, zebra striping, color-coded Priorytet / Wynik / Waga, cienkie szare bordery. Otwiera się natywnie w Excelu i Sheets.
+1. `<slug>.xlsx` — **primary deliverable dla arkusza**. Zakładki: `Test cases` + **N zakładek per-bug** (jeśli są FAIL cases — każdy bug jako osobna zakładka w układzie vertykalnym, label | value; tab color = kolor Ważności: czerwony Krytyczna, pomarańcz Wysoka, żółty Średnia, szary Niska). **Zakładka „Execution report" NIE jest tworzona** — redundantna (Wynik + ID buga są w Test cases, pełny detail FAIL jest w bug tabs). Stylowany header (ciemnoniebieski #305496, biały bold, freeze row 1), wrap-text na długich cellkach, zebra striping, color-coded Priorytet / Wynik / Waga, cienkie szare bordery.
 2. `<slug>.md` — human-readable. Brief + oba TSV bloki inline, single-line steps.
 3. `<slug>-cases.tsv` — raw TSV (multi-line quoted per RFC 4180). Do git diff i importu do Sheets przez `File → Import`.
-4. `<slug>-report.tsv` — raw TSV execution report. Same rationale.
+4. `<slug>-report.tsv` — raw TSV execution report (aggregated data source dla git diff / backup / regeneracji; **NIE renderuje się jako zakładka XLSX** — patrz pkt 1). Zawiera wszystkie rows z Rzeczywisty rezultat / Waga / Reprodukcja per case, ale w XLSX ta informacja jest lepiej pokazana w per-bug tabs (dla FAIL) i Test cases (dla PASS).
 5. `<slug>-bugs.tsv` (opcjonalnie, tylko przy FAIL) — bug tracker TSV (aggregated, jeden plik z N wierszami, do git diff / import do Sheets). W XLSX renderuje się jako **N zakładek per-bug** (nie jedna zbiorcza) w układzie vertykalnym.
 6. `bugs/<BUG-ID>.md` (opcjonalnie, tylko przy FAIL) — per-bug markdown (jeden plik / bug), standalone kopiowalny do Jira / GitHub. Katalog `qa-runs/bugs/`.
 

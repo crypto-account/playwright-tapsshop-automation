@@ -562,16 +562,9 @@ def build(base: Path):
         meta,
     )
 
-    ws2 = wb.create_sheet("Execution report")
-    ws2.sheet_properties.tabColor = "305496"
-    style_sheet(
-        ws2, report_rows, REPORT_WIDTHS,
-        category_fills_for(report_rows[0], {
-            "Status": STATUS_FILL,
-            "Waga": SEVERITY_FILL, "Severity": SEVERITY_FILL,
-        }),
-        meta,
-    )
+    # Execution report — celowo NIE tworzymy zakładki w XLSX (redundantne z:
+    #   Wynik/ID buga w Test cases + pełny detail w per-bug tabs).
+    # Plik -report.tsv nadal generowany jako aggregated data source (git diff, backup).
 
     if bugs_rows:
         add_bug_tabs(wb, bugs_rows)
