@@ -356,6 +356,12 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
         # A width = 32 to accommodate longest label "Powiązany scenariusz testowy" (28 chars) w 10pt
         ws.column_dimensions["A"].width = 32
         ws.column_dimensions["B"].width = 85
+        # Ukryj wszystkie kolumny poza A:B — do samego końca arkusza Excel (XFD = 16384)
+        # + thick frame wokół content (poniżej) daje bug tab wyglądający jak "karta"
+        from openpyxl.worksheet.dimensions import ColumnDimension
+        # Jeden ColumnDimension range zamiast 16k obiektów — RLE-compressed w XLSX
+        hidden_dim = ColumnDimension(ws, min=3, max=16384, hidden=True)
+        ws.column_dimensions['C'] = hidden_dim
 
         # Field lookup for random access
         field_values = {h: (bug_row[i] if i < len(bug_row) else "") for i, h in enumerate(headers)}
@@ -473,6 +479,27 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
                 r += 1
 
         ws.sheet_view.showGridLines = False
+
+        # Ramka wokół całego bug content (A:B, wszystkie wiersze) — thick dark blue border
+        # Odróżnia content od pustych kolumn na prawo
+        THICK = Side(border_style="medium", color="305496")
+        last_row = r - 1  # ostatni wiersz z zawartością
+        for row_num in range(1, last_row + 1):
+            a = ws.cell(row=row_num, column=1)
+            b = ws.cell(row=row_num, column=2)
+            # Zachowaj istniejące border sides, dodaj thick na zewnętrznych krawędziach
+            a.border = Border(
+                top=THICK if row_num == 1 else a.border.top,
+                bottom=THICK if row_num == last_row else a.border.bottom,
+                left=THICK,
+                right=a.border.right,
+            )
+            b.border = Border(
+                top=THICK if row_num == 1 else b.border.top,
+                bottom=THICK if row_num == last_row else b.border.bottom,
+                left=b.border.left,
+                right=THICK,
+            )
 
 
 LINK_FONT_BOLD = Font(name="Calibri", size=10, bold=True, color="0563C1", underline="single")
