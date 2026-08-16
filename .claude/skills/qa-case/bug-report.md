@@ -24,11 +24,13 @@ To samo ID musi być w kolumnie `ID buga` w cases sheet (dla powiązania).
 ID	Tytuł	Priorytet	Ważność/dotkliwość	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
 ```
 
-Kolumny są zgrupowane w 4 sekcje w XLSX per-bug tab:
+Kolumny są zgrupowane w 6 sekcji w XLSX per-bug tab:
 - **Metadane** (6): `ID`, `Tytuł`, `Priorytet`, `Ważność/dotkliwość`, `Powiązany scenariusz testowy`, `Data zgłoszenia`
 - **Środowisko** (4): `URL`, `Przeglądarka`, `System operacyjny`, `Rozdzielczość`
-- **Reprodukcja** (4): `Kroki reprodukcji`, `Oczekiwany rezultat`, `Rzeczywisty rezultat`, `Screenshot`
+- **Reprodukcja** (1): `Kroki reprodukcji`
+- **Rezultat** (2): `Oczekiwany rezultat` (zielone tło), `Rzeczywisty rezultat` (czerwone tło)
 - **Analiza wpływu** (1, merged): `Wpływ na użytkownika`
+- **Załączniki** (1 image): embedded screenshot bez label
 
 Konwencje:
 
