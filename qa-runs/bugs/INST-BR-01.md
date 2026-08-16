@@ -1,11 +1,11 @@
 # INST-BR-01 — Wyszukiwarka nie znajduje polskich nazw gdy fraza wpisana bez polskich znaków
 
-**Priorytet:** P2 · Wysoki · **Ważność:** Medium · **Powiązany scenariusz testowy:** INST-07 · **Data zgłoszenia:** 2026-08-15
+**Priorytet:** P2 · Wysoki · **Ważność/dotkliwość:** Średnia · **Powiązany scenariusz testowy:** INST-07 · **Data zgłoszenia:** 2026-08-15
 
 ## Środowisko
 - **URL:** https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
-- **Przeglądarka:** Chrome (latest)
-- **System operacyjny:** macOS
+- **Przeglądarka:** Chrome 151
+- **System operacyjny:** macOS 15.7.4
 - **Rozdzielczość:** 1440×900
 
 ## Kroki reprodukcji

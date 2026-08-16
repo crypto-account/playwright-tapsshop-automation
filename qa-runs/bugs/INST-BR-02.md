@@ -1,11 +1,11 @@
 # INST-BR-02 — Pobieranie przy zerowych wynikach generuje pusty plik XLSX bez nagłówka
 
-**Priorytet:** P3 · Niski · **Ważność:** Low · **Powiązany scenariusz testowy:** INST-17 · **Data zgłoszenia:** 2026-08-15
+**Priorytet:** P3 · Niski · **Ważność/dotkliwość:** Niska · **Powiązany scenariusz testowy:** INST-17 · **Data zgłoszenia:** 2026-08-15
 
 ## Środowisko
 - **URL:** https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
-- **Przeglądarka:** Chrome (latest)
-- **System operacyjny:** macOS
+- **Przeglądarka:** Chrome 151
+- **System operacyjny:** macOS 15.7.4
 - **Rozdzielczość:** 1440×900
 
 ## Kroki reprodukcji
