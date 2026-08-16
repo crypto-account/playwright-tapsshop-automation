@@ -24,6 +24,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.worksheet.hyperlink import Hyperlink
 
 # Title bar (row 1) — darker shade than header row
 TITLE_FILL = PatternFill("solid", fgColor="305496")
@@ -487,8 +488,9 @@ LINK_FONT_PLAIN = Font(name="Calibri", size=10, color="0563C1", underline="singl
 
 
 def add_bug_id_hyperlinks(wb):
-    """Bidirectional links: Test cases 'ID buga' → bug tab, and bug tab
-    'Powiązany scenariusz testowy' → matching row w Test cases."""
+    """Bidirectional internal links via Hyperlink object z location=
+    (proper XML: <hyperlink ref location display>, bez TargetMode=External).
+    Działa w Excelu, Numbers, i Google Sheets."""
     # Test cases → bug tab
     if "Test cases" in wb.sheetnames:
         ws = wb["Test cases"]
@@ -500,12 +502,15 @@ def add_bug_id_hyperlinks(wb):
                     cell = ws.cell(row=r, column=col_idx)
                     val = cell.value
                     if isinstance(val, str) and val and val != "-" and val in wb.sheetnames:
-                        cell.hyperlink = f"#'{val}'!A1"
+                        cell.hyperlink = Hyperlink(
+                            ref=cell.coordinate,
+                            location=f"'{val}'!A1",
+                            display=val,
+                        )
                         cell.font = LINK_FONT_BOLD
                 break
 
     # Bug tab → Test cases row
-    # Find "Test cases" ID column so we can compute exact row per case ID
     case_id_row_map = {}
     if "Test cases" in wb.sheetnames:
         tc_ws = wb["Test cases"]
@@ -521,7 +526,6 @@ def add_bug_id_hyperlinks(wb):
         if not sheet_name.startswith(("INST-BR-", "BR-")) and "-BR-" not in sheet_name:
             continue
         ws = wb[sheet_name]
-        # Bug tabs use vertical layout: iterate rows, find label "Powiązany scenariusz testowy"
         for r in range(1, ws.max_row + 1):
             label = ws.cell(row=r, column=1).value
             if label == "Powiązany scenariusz testowy":
@@ -529,7 +533,11 @@ def add_bug_id_hyperlinks(wb):
                 case_id = val_cell.value
                 if isinstance(case_id, str) and case_id in case_id_row_map:
                     target_row = case_id_row_map[case_id]
-                    val_cell.hyperlink = f"#'Test cases'!A{target_row}"
+                    val_cell.hyperlink = Hyperlink(
+                        ref=val_cell.coordinate,
+                        location=f"'Test cases'!A{target_row}",
+                        display=case_id,
+                    )
                     val_cell.font = LINK_FONT_PLAIN
                 break
 
