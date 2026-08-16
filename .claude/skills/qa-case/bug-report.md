@@ -21,11 +21,11 @@ To samo ID musi być w kolumnie `ID buga` w cases sheet (dla powiązania).
 ## Bug tracker TSV — kolumny (15, dokładna kolejność)
 
 ```
-ID	Tytuł	Priorytet	Ważność	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
+ID	Tytuł	Priorytet	Ważność/dotkliwość	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
 ```
 
 Kolumny są zgrupowane w 4 sekcje w XLSX per-bug tab:
-- **Metadane** (6): `ID`, `Tytuł`, `Priorytet`, `Ważność`, `Powiązany scenariusz testowy`, `Data zgłoszenia`
+- **Metadane** (6): `ID`, `Tytuł`, `Priorytet`, `Ważność/dotkliwość`, `Powiązany scenariusz testowy`, `Data zgłoszenia`
 - **Środowisko** (4): `URL`, `Przeglądarka`, `System operacyjny`, `Rozdzielczość`
 - **Reprodukcja** (4): `Kroki reprodukcji`, `Oczekiwany rezultat`, `Rzeczywisty rezultat`, `Screenshot`
 - **Analiza wpływu** (1, merged): `Wpływ na użytkownika`
@@ -34,14 +34,18 @@ Konwencje:
 
 - **ID** = `<PREFIX>-BR-<NN>` — sekwencyjnie
 - **Tytuł** — z case'a (bez zmian; ten sam tytuł co Tytuł w cases sheet dla powiązanego case'a) LUB przepisany żeby fokus na buga („X nie działa gdy Y" zamiast „X działa gdy Y" które opisywało intent testu)
-- **Priorytet** (biznesowa pilność naprawy) = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski`. Ustalasz na podstawie kombinacji Ważność + wpływ na użytkownika + częstość występowania. Wzór: „Ważność Critical + wielu użytkowników trafia" → P1; „Medium + workaround istnieje" → P2; „Low + edge case rzadko trafiany" → P3.
-- **Ważność** (techniczny impact / severity) = `Critical` | `High` | `Medium` | `Low` (kopia z execution report → kolumna Waga). Opisuje JAK ZŁE jest samo w sobie zachowanie (blokuje flow? psuje UX? kosmetyka?), oddzielnie od BIZNESOWEJ URGENCY (Priorytet).
-- **Priorytet vs Ważność — czemu 2 kolumny**: bug może być Critical severity (crash) ale Low priority (dotyczy 0.01% userów na wygasłej wersji Firefox). Odwrotnie: Low severity (typo) ale P1 priority (na demo dla CEO jutro). Rozdzielenie pozwala trackować obie osi.
+- **Priorytet** (biznesowa pilność naprawy) = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski`. Ustalasz na podstawie kombinacji Ważność/dotkliwość + wpływ na użytkownika + częstość występowania. Wzór: „Ważność/dotkliwość Critical + wielu użytkowników trafia" → P1; „Medium + workaround istnieje" → P2; „Low + edge case rzadko trafiany" → P3.
+- **Ważność/dotkliwość** (techniczny impact / severity) = `Krytyczna` | `Wysoka` | `Średnia` | `Niska` (kopia z execution report → kolumna Waga; wartości PL). Opisuje JAK DOTKLIWE jest samo w sobie zachowanie (blokuje flow? psuje UX? kosmetyka?), oddzielnie od BIZNESOWEJ URGENCY (Priorytet).
+  - **Krytyczna** = blokuje core flow, brak workaround, data loss, crash, security breach
+  - **Wysoka** = poważny błąd funkcjonalny, workaround istnieje ale niewygodny, dotyczy dużej grupy
+  - **Średnia** = zauważalny błąd UX, workaround łatwy, mniejsza grupa
+  - **Niska** = kosmetyka, rzadki edge case, minimalny impact
+- **Priorytet vs Ważność/dotkliwość — czemu 2 kolumny**: bug może być Critical severity (crash) ale Low priority (dotyczy 0.01% userów na wygasłej wersji Firefox). Odwrotnie: Low severity (typo) ale P1 priority (na demo dla CEO jutro). Rozdzielenie pozwala trackować obie osi.
 - **Powiązany scenariusz testowy** = ID case'a który wykrył buga (np. `INST-07`)
 - **Data zgłoszenia** = data run-u w formacie `YYYY-MM-DD`
 - **URL** = base URL testowanej strony (bez query params)
-- **Przeglądarka** = domyślnie `Chrome (latest)` (bez explicit wersji chyba że wersja ma znaczenie dla buga)
-- **System operacyjny** = `macOS` | `Linux` | `Windows` (system Playwright MCP hostuje)
+- **Przeglądarka** = **wersja z Playwright user-agent** — MUSISZ zapytać: `mcp__playwright__browser_evaluate({ function: '() => navigator.userAgent' })` i wyparsować `Chrome/<X.Y.Z.W>`. Format: **`Chrome <MAJOR>`** (np. `Chrome 151`) — tylko major version, patchowanie nie ma znaczenia dla większości bugów. Jeśli bug jest wersja-specific, użyj pełnej `Chrome 151.0.6778.86`.
+- **System operacyjny** = **rzeczywista wersja OS** — `sw_vers -productVersion` na macOS (np. `macOS 15.7.4`), `uname -r` na Linux, PowerShell `[System.Environment]::OSVersion.Version` na Windows. Nie używaj generycznego `macOS` bez wersji — dla bugów kompatybilności to za mało.
 - **Rozdzielczość** = viewport testowy, domyślnie `1440×900`; dla mobile/tablet bugów — odpowiedni rozmiar
 - **Kroki reprodukcji** — **kopia z kolumny „Kroki" w cases sheet** (nie z „Reprodukcja" w report!). Case's Kroki są UI-driven i self-contained; Reprodukcja w execution report to redundancja i często może być stale. Jeśli FAIL wymaga DODATKOWEGO setup poza tym co jest w case Kroki (np. „przed krokiem 1 wyczyść localStorage"), dopisz to jako prefiks — ale bazą są case Kroki verbatim. Też updateuj kolumnę „Reprodukcja" w execution report do tego samego contentu (spójność między report i bug tracker).
 - **Oczekiwany rezultat** — kopia z kolumny „Oczekiwany rezultat" w cases sheet
@@ -54,7 +58,7 @@ Konwencje:
 ```markdown
 # <BUG-ID> — <Tytuł>
 
-**Priorytet:** <P1 · Krytyczny | P2 · Wysoki | P3 · Niski> · **Ważność:** <Critical|High|Medium|Low> · **Powiązany scenariusz testowy:** <CASE-ID> · **Data zgłoszenia:** <YYYY-MM-DD>
+**Priorytet:** <P1 · Krytyczny | P2 · Wysoki | P3 · Niski> · **Ważność/dotkliwość:** <Krytyczna|Wysoka|Średnia|Niska> · **Powiązany scenariusz testowy:** <CASE-ID> · **Data zgłoszenia:** <YYYY-MM-DD>
 
 ## Środowisko
 - **URL:** <url>
@@ -88,4 +92,4 @@ Konwencje:
 
 ## Kolejność w bug tracker
 
-Sortowane po **Priorytet** rosnąco (P1 → P3), potem po **Ważność** malejąco (Critical → Low), potem po ID buga rosnąco. Najpilniejsze do naprawy na górze — pierwsze widoczne w Excelu.
+Sortowane po **Priorytet** rosnąco (P1 → P3), potem po **Ważność/dotkliwość** malejąco (Critical → Low), potem po ID buga rosnąco. Najpilniejsze do naprawy na górze — pierwsze widoczne w Excelu.

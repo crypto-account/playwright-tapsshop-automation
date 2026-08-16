@@ -139,10 +139,12 @@ Dla **każdego FAIL row** w execution report — bez pytania usera — generuj:
 
 1. **Row w `qa-runs/<slug>-bugs.tsv`** (bug tracker, jeden plik / run). Kolumny (15, dokładna kolejność):
    ```
-   ID	Tytuł	Priorytet	Ważność	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
+   ID	Tytuł	Priorytet	Ważność/dotkliwość	Powiązany scenariusz testowy	Data zgłoszenia	URL	Przeglądarka	System operacyjny	Rozdzielczość	Kroki reprodukcji	Oczekiwany rezultat	Rzeczywisty rezultat	Screenshot	Wpływ na użytkownika
    ```
    Zgrupowane w 4 sekcje w XLSX per-bug tab: **Metadane** (6) · **Środowisko** (4) · **Reprodukcja** (4) · **Analiza wpływu** (1).
-   **Priorytet vs Ważność**: Priorytet = biznesowa pilność (P1/P2/P3), Ważność = techniczny impact (Critical/High/Medium/Low). Dwie osi — bug może być Critical severity + Low priority (crash w edge case) lub odwrotnie (typo na demo dla CEO = P1 + Low severity).
+   **Priorytet vs Ważność/dotkliwość**: Priorytet = biznesowa pilność (P1/P2/P3), Ważność/dotkliwość = techniczny impact (Krytyczna/Wysoka/Średnia/Niska — PL wartości). Dwie osi — bug może być Krytyczna severity + P3 priority (crash w edge case) lub odwrotnie (typo na demo dla CEO = P1 + Niska).
+
+   **Środowisko — wersje wykryte automatycznie**: przed generacją bugów zapytaj Playwright MCP o browser wersję (`browser_evaluate({ function: '() => navigator.userAgent' })`) i sparsuj Chrome major. OS wersja: `sw_vers -productVersion` (macOS), `uname -r` (Linux), PowerShell (Windows). Formaty: `Chrome 151`, `macOS 15.7.4`. Nie hardkoduj „Chrome (latest)" ani generycznego „macOS" — każdy bug musi mieć konkretną wersję do reprodukcji.
 2. **Plik `qa-runs/bugs/<BUG-ID>.md`** (per-bug markdown, standalone kopiowalny do Jira/GitHub).
 
 Pełna referencja formatu, kolumn i markdown template: `.claude/skills/qa-case/bug-report.md`.

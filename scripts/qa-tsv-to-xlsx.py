@@ -23,6 +23,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
+from openpyxl.drawing.image import Image as XLImage
 
 # Title bar (row 1) — darker shade than header row
 TITLE_FILL = PatternFill("solid", fgColor="305496")
@@ -93,6 +94,12 @@ STATUS_FILL = {
     "NOT RUN": PatternFill("solid", fgColor="BDD7EE"),
 }
 SEVERITY_FILL = {
+    # PL (current)
+    "Krytyczna": PatternFill("solid", fgColor="C00000"),
+    "Wysoka":    PatternFill("solid", fgColor="F8CBAD"),
+    "Średnia":   PatternFill("solid", fgColor="FFF2CC"),
+    "Niska":     PatternFill("solid", fgColor="D9D9D9"),
+    # Legacy English still recognized
     "Critical": PatternFill("solid", fgColor="C00000"),
     "High":     PatternFill("solid", fgColor="F8CBAD"),
     "Medium":   PatternFill("solid", fgColor="FFF2CC"),
@@ -121,15 +128,15 @@ REPORT_WIDTHS = {
     "Actual Result": 60, "Severity": 12, "Screenshot": 26, "Repro": 55,
 }
 BUGS_WIDTHS = {
-    "ID": 14, "Tytuł": 42, "Priorytet": 14, "Ważność": 12,
+    "ID": 14, "Tytuł": 42, "Priorytet": 14, "Ważność/dotkliwość": 18,
     "Powiązany scenariusz testowy": 14,
     "Data zgłoszenia": 14,
     "URL": 55, "Przeglądarka": 20, "System operacyjny": 18, "Rozdzielczość": 14,
     "Kroki reprodukcji": 55,
     "Oczekiwany rezultat": 42, "Rzeczywisty rezultat": 42,
     "Screenshot": 26, "Wpływ na użytkownika": 45,
-    # legacy Waga still recognized
-    "Waga": 12,
+    # legacy still recognized
+    "Ważność": 12, "Waga": 12,
 }
 
 
@@ -299,10 +306,11 @@ BUG_LABEL_ALIGN = Alignment(horizontal="left", vertical="top", indent=1, wrap_te
 
 # Ordered sections mapping — each section groups a set of field headers
 BUG_SECTIONS = [
-    ("Metadane", ["ID", "Tytuł", "Priorytet", "Ważność", "Powiązany scenariusz testowy", "Data zgłoszenia"]),
+    ("Metadane", ["ID", "Tytuł", "Priorytet", "Ważność/dotkliwość", "Powiązany scenariusz testowy", "Data zgłoszenia"]),
     ("Środowisko", ["URL", "Przeglądarka", "System operacyjny", "Rozdzielczość"]),
-    ("Reprodukcja", ["Kroki reprodukcji", "Oczekiwany rezultat", "Rzeczywisty rezultat", "Screenshot"]),
+    ("Reprodukcja", ["Kroki reprodukcji", "Oczekiwany rezultat", "Rzeczywisty rezultat"]),
     ("Analiza wpływu", ["Wpływ na użytkownika"]),
+    ("Załączniki", ["Screenshot"]),
 ]
 
 
@@ -312,21 +320,19 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
         return
     headers = bugs_rows[0]
     id_idx = headers.index("ID") if "ID" in headers else 0
-    # Prefer new "Ważność" column, fall back to legacy "Waga"
-    if "Ważność" in headers:
-        waga_idx = headers.index("Ważność")
-    elif "Waga" in headers:
-        waga_idx = headers.index("Waga")
+    # Prefer "Ważność/dotkliwość", fall back to legacy names
+    for candidate in ("Ważność/dotkliwość", "Ważność", "Waga"):
+        if candidate in headers:
+            waga_idx = headers.index(candidate)
+            break
     else:
         waga_idx = None
     title_idx = headers.index("Tytuł") if "Tytuł" in headers else 1
 
-    # Tab color by Waga
+    # Tab color by severity — accepts PL + legacy EN values
     waga_colors = {
-        "Critical": "C00000",
-        "High": "E97132",
-        "Medium": "FFC000",
-        "Low": "A6A6A6",
+        "Krytyczna": "C00000", "Wysoka": "E97132", "Średnia": "FFC000", "Niska": "A6A6A6",
+        "Critical":  "C00000", "High":   "E97132", "Medium":  "FFC000", "Low":   "A6A6A6",
     }
 
     for bug_row in bugs_rows[1:]:
@@ -353,6 +359,9 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
 
         # Field lookup for random access
         field_values = {h: (bug_row[i] if i < len(bug_row) else "") for i, h in enumerate(headers)}
+        # Track screenshot path & row (for embedding after row rendering completes)
+        screenshot_row_after = None
+        screenshot_path = field_values.get("Screenshot", "")
 
         r = 2  # current row cursor
         for section_name, section_fields in BUG_SECTIONS:
@@ -366,20 +375,52 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
             ws.row_dimensions[r].height = 24
             r += 1
 
-            # Field rows within section
-            single_field = len(section_fields) == 1
+            # Special: "Załączniki" section renders only embedded images (no label + no path)
+            if section_name == "Załączniki":
+                for field in section_fields:
+                    value = field_values.get(field, "")
+                    if not value or value == "-":
+                        continue
+                    img_path = Path(value)
+                    if not img_path.exists():
+                        continue
+                    try:
+                        from PIL import Image as PILImage
+                        with PILImage.open(img_path) as im:
+                            orig_w, orig_h = im.size
+                        max_w = 650
+                        if orig_w > max_w:
+                            w = max_w
+                            h = int(orig_h * max_w / orig_w)
+                        else:
+                            w, h = orig_w, orig_h
+                    except Exception:
+                        w, h = 650, 400
+                    xl_img = XLImage(str(img_path))
+                    xl_img.width = w
+                    xl_img.height = h
+                    xl_img.anchor = f'A{r}'
+                    ws.add_image(xl_img)
+                    rows_needed = max(1, (h + 10) // 15)
+                    for i in range(rows_needed):
+                        ws.row_dimensions[r + i].height = 15
+                    r += rows_needed
+                continue  # skip normal field loop for Załączniki
+
+            # Field rows within section — always render label|value
+            # (skip label ONLY gdy field name == section name, np. Środowisko section z Środowisko field)
             for field in section_fields:
                 if field not in field_values:
                     continue
                 value = field_values[field]
+                skip_label = (field == section_name)
 
-                if single_field:
-                    # Skip label — merge value across A:B (label redundant with section header)
+                if skip_label:
                     val_cell = ws.cell(row=r, column=1, value=value)
                     ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
                     val_cell.border = BORDER
                     val_cell.font = BODY_FONT
-                    val_cell.alignment = Alignment(horizontal="left", vertical="top", indent=1, wrap_text=True)
+                    val_cell.alignment = Alignment(horizontal="left", vertical="center", indent=3, wrap_text=True)
                 else:
                     label_cell = ws.cell(row=r, column=1, value=field)
                     label_cell.fill = BUG_LABEL_FILL
@@ -392,10 +433,10 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
                     val_cell.font = BODY_FONT
                     val_cell.alignment = BODY_ALIGN_TOP
 
-                # Ważność / Waga (severity) row color
-                if field in ("Ważność", "Waga") and value in SEVERITY_FILL:
+                # Severity (Ważność/dotkliwość / Ważność / Waga) row color
+                if field in ("Ważność/dotkliwość", "Ważność", "Waga") and value in SEVERITY_FILL:
                     val_cell.fill = SEVERITY_FILL[value]
-                    if value == "Critical":
+                    if value in ("Critical", "Krytyczna"):
                         val_cell.font = SEVERITY_FONT_WHITE
                     else:
                         val_cell.font = CATEGORY_FONT
@@ -405,27 +446,85 @@ def add_bug_tabs(wb, bugs_rows: list[list[str]]):
                     val_cell.fill = PRIORITY_FILL[value]
                     val_cell.font = BODY_FONT_BOLD
                     val_cell.alignment = BODY_ALIGN_CENTER
+                # Oczekiwany rezultat — jasnozielone tło (co powinno być)
+                elif field == "Oczekiwany rezultat" and value and value != "-":
+                    val_cell.fill = PatternFill("solid", fgColor="E2EFDA")
+                # Rzeczywisty rezultat — jasnoczerwone tło (co jest = bug)
+                elif field == "Rzeczywisty rezultat" and value and value != "-":
+                    val_cell.fill = PatternFill("solid", fgColor="FCE4E4")
+
 
                 # Rich text
                 if field in RICH_TEXT_COLUMNS and isinstance(value, str) and value and value != "-":
                     rt, _href = build_rich_text(value, None)
                     val_cell.value = rt
 
-                # Row height: min 22pt (accommodates label wrap); higher for long values
-                # For merged (single_field) cells, effective width ≈ A+B ≈ 117 units → chars/line ≈ 100
-                # For 2-column layout, value uses column B ≈ 85 units → chars/line ≈ 70
-                chars_per_line = 100 if single_field else 70
+                # Row height: min 22pt; higher for long values
+                # Merged row (skip_label) has wider effective width
+                chars_per_line = 100 if skip_label else 70
                 base_lines = 1
                 if isinstance(value, str) and value:
                     base_lines = value.count('\n') + 1 + max(0, (len(value) - 1) // chars_per_line)
-                # Label wrap check (only for 2-col mode)
-                label_lines = 1 if single_field else max(1, (len(field) - 1) // 30 + 1)
+                label_lines = 1 if skip_label else max(1, (len(field) - 1) // 30 + 1)
                 lines = max(base_lines, label_lines)
-                ws.row_dimensions[r].height = max(22, min(220, lines * 16))
+                extra = 1 if skip_label else 0
+                ws.row_dimensions[r].height = max(22, min(240, (lines + extra) * 16))
 
                 r += 1
 
         ws.sheet_view.showGridLines = False
+
+
+LINK_FONT_BOLD = Font(name="Calibri", size=10, bold=True, color="0563C1", underline="single")
+LINK_FONT_PLAIN = Font(name="Calibri", size=10, color="0563C1", underline="single")
+
+
+def add_bug_id_hyperlinks(wb):
+    """Bidirectional links: Test cases 'ID buga' → bug tab, and bug tab
+    'Powiązany scenariusz testowy' → matching row w Test cases."""
+    # Test cases → bug tab
+    if "Test cases" in wb.sheetnames:
+        ws = wb["Test cases"]
+        headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+        for col_name in ("ID buga", "Bug ID"):
+            if col_name in headers:
+                col_idx = headers.index(col_name) + 1
+                for r in range(2, ws.max_row + 1):
+                    cell = ws.cell(row=r, column=col_idx)
+                    val = cell.value
+                    if isinstance(val, str) and val and val != "-" and val in wb.sheetnames:
+                        cell.hyperlink = f"#'{val}'!A1"
+                        cell.font = LINK_FONT_BOLD
+                break
+
+    # Bug tab → Test cases row
+    # Find "Test cases" ID column so we can compute exact row per case ID
+    case_id_row_map = {}
+    if "Test cases" in wb.sheetnames:
+        tc_ws = wb["Test cases"]
+        tc_headers = [tc_ws.cell(row=1, column=c).value for c in range(1, tc_ws.max_column + 1)]
+        if "ID" in tc_headers:
+            id_col = tc_headers.index("ID") + 1
+            for r in range(2, tc_ws.max_row + 1):
+                v = tc_ws.cell(row=r, column=id_col).value
+                if isinstance(v, str) and v:
+                    case_id_row_map[v] = r
+
+    for sheet_name in wb.sheetnames:
+        if not sheet_name.startswith(("INST-BR-", "BR-")) and "-BR-" not in sheet_name:
+            continue
+        ws = wb[sheet_name]
+        # Bug tabs use vertical layout: iterate rows, find label "Powiązany scenariusz testowy"
+        for r in range(1, ws.max_row + 1):
+            label = ws.cell(row=r, column=1).value
+            if label == "Powiązany scenariusz testowy":
+                val_cell = ws.cell(row=r, column=2)
+                case_id = val_cell.value
+                if isinstance(case_id, str) and case_id in case_id_row_map:
+                    target_row = case_id_row_map[case_id]
+                    val_cell.hyperlink = f"#'Test cases'!A{target_row}"
+                    val_cell.font = LINK_FONT_PLAIN
+                break
 
 
 def build(base: Path):
@@ -461,6 +560,9 @@ def build(base: Path):
 
     if bugs_rows:
         add_bug_tabs(wb, bugs_rows)
+
+    # Post-processing: dodaj bidirectional hyperlinki między Test cases i bug tabs
+    add_bug_id_hyperlinks(wb)
 
     out = base.with_suffix(".xlsx") if base.suffix else base.with_name(base.name + ".xlsx")
     wb.save(out)
