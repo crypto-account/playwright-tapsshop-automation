@@ -56,37 +56,33 @@ INST-15	Pobieranie pliku Excel uwzględnia aktywne filtry	P1 · Krytyczny	Wyszuk
 INST-16	Pobieranie bez aktywnych filtrów zwraca pełną listę instytucji	P2 · Wysoki	Wyszukiwarka bez filtrów	brak filtrów, licznik = 2605	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Kliknij ""Pobierz""
 3) Sprawdź liczbę wierszy w pobranym pliku"	Plik zawiera header + 2605 wierszy danych	PASS	-	Rzeczywisty: 2606 wierszy (header + 2605)
-INST-17	Pobieranie przy zerowych wynikach nie generuje pustego pliku bez nagłówka	P3 · Niski	Wyszukiwarka z frazą bez dopasowań (licznik = 0)	"fraza: ""nieistniejaca_xyz"", licznik = 0"	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
-2) W pole wyszukiwania wpisz frazę ""nieistniejaca_xyz"" i poczekaj aż licznik pokaże ""Znaleziono: 0""
-3) Kliknij przycisk ""Pobierz""
-4) Otwórz pobrany plik i sprawdź czy zawiera nagłówek kolumn"	"Przycisk ""Pobierz"" jest wyłączony LUB pobrany plik zawiera co najmniej nagłówek kolumn (nie tylko pusty arkusz)"	FAIL	INST-BR-02	"Przycisk nie jest disabled, plik ma 1×1 arkusz z pustą komórką (brak nawet nagłówka ""#/ID/Nazwa"") — mylące dla usera"
-INST-18	Przycisk Następna strona przechodzi do kolejnych 20 wyników	P1 · Krytyczny	Wyszukiwarka na stronie 1 (offset=0), Next enabled	"Kliknięcie ""Go to next page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
+INST-17	Przycisk Następna strona przechodzi do kolejnych 20 wyników	P1 · Krytyczny	Wyszukiwarka na stronie 1 (offset=0), Next enabled	"Kliknięcie ""Go to next page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Zapisz info paginacji (np. ""1–20 z 2605"")
 3) Kliknij przycisk paginacji ""Go to next page""
 4) Sprawdź URL i info"	"URL zawiera ""&offset=20"", info paginacji: ""21–40 z 2605"", tabela pokazuje nowe wiersze"	PASS	-	-
-INST-19	Na pierwszej stronie przycisk Poprzednia jest wyłączony	P2 · Wysoki	Wyszukiwarka na stronie 1 (offset=0)	"stan przycisku ""Go to previous page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
+INST-18	Na pierwszej stronie przycisk Poprzednia jest wyłączony	P2 · Wysoki	Wyszukiwarka na stronie 1 (offset=0)	"stan przycisku ""Go to previous page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=0
 2) Zbadaj atrybut disabled przycisku ""Go to previous page"""	"Przycisk ""Poprzednia"" ma disabled=true, klik nie ma efektu"	PASS	-	-
-INST-20	Na ostatniej stronie przycisk Następna jest wyłączony	P2 · Wysoki	Wyszukiwarka na ostatniej stronie (offset=2600, 2601–2605)	"stan przycisku ""Go to next page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=2600
+INST-19	Na ostatniej stronie przycisk Następna jest wyłączony	P2 · Wysoki	Wyszukiwarka na ostatniej stronie (offset=2600, 2601–2605)	"stan przycisku ""Go to next page"""	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/?limit=20&offset=2600
 2) Zbadaj atrybut disabled przycisku ""Go to next page"""	"Przycisk ""Następna"" ma disabled=true, info paginacji: ""2601–2605 z 2605"", tabela pokazuje 5 wierszy"	PASS	-	"URL ?offset=2600 jako skrót do stanu „ostatnia strona""; interakcja Next pokryta w INST-18"
-INST-21	Wyszukiwarka renderuje się poprawnie na typowych rozdzielczościach desktop	P1 · Krytyczny	Przeglądarka desktopowa z możliwością zmiany rozmiaru okna (DevTools lub natywnie)	viewporty testowane: 1280×720 (małe laptopy, dolny próg), 1440×900 (MBP default), 1920×1080 (FHD monitor)	"1) Ustaw okno przeglądarki na rozmiar 1280×720 pikseli (DevTools → Toggle device toolbar → wpisz ""1280 × 720"" w polach szerokość × wysokość)
+INST-20	Wyszukiwarka renderuje się poprawnie na typowych rozdzielczościach desktop	P1 · Krytyczny	Przeglądarka desktopowa z możliwością zmiany rozmiaru okna (DevTools lub natywnie)	viewporty testowane: 1280×720 (małe laptopy, dolny próg), 1440×900 (MBP default), 1920×1080 (FHD monitor)	"1) Ustaw okno przeglądarki na rozmiar 1280×720 pikseli (DevTools → Toggle device toolbar → wpisz ""1280 × 720"" w polach szerokość × wysokość)
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 3) Poczekaj ~2s na załadowanie strony i sprawdź wzrokowo: (a) NIE ma poziomego paska przewijania na dole okna, (b) widoczne w całości bez ucinania: pole wyszukiwania, sekcje filtrów, licznik ""Znaleziono"", tabela wyników
 4) Powtórz kroki 1–3 dla rozmiaru okna 1440×900
 5) Powtórz kroki 1–3 dla rozmiaru okna 1920×1080"	Na każdym z 3 rozmiarów okna (1280×720, 1440×900, 1920×1080): brak poziomego paska przewijania na dole okna, wszystkie elementy wyszukiwarki (pole wyszukiwania, filtry, tabela) widoczne w pełni bez ucinania przez prawą krawędź	PASS	-	Zaobserwowano: brak paska przewijania poziomego i pełną widoczność core UI na wszystkich 3 rozmiarach okna (1280×720, 1440×900, 1920×1080)
-INST-22	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw okno przeglądarki na rozmiar 768×1024 pikseli (DevTools → Toggle device toolbar → wybierz ""iPad"" LUB wpisz ""768 × 1024"")
+INST-21	Wyszukiwarka mieści się w ekranie tabletu bez poziomego przewijania	P1 · Krytyczny	Viewport 768×1024 px	viewport: 768×1024	"1) Ustaw okno przeglądarki na rozmiar 768×1024 pikseli (DevTools → Toggle device toolbar → wybierz ""iPad"" LUB wpisz ""768 × 1024"")
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 3) Poczekaj ~2s na załadowanie strony
 4) Sprawdź wzrokowo: brak poziomego paska przewijania na dole okna, widoczne pole wyszukiwania, sekcje filtrów i tabela wyników bez ucinania"	Brak poziomego paska przewijania na dole okna, filtry i tabela wyników widoczne bez ucinania	PASS	-	Zaobserwowano: brak paska przewijania poziomego na tablecie 768×1024, wszystkie elementy widoczne
-INST-23	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw okno przeglądarki na rozmiar 375×812 pikseli (DevTools → Toggle device toolbar → wybierz ""iPhone SE"" lub ""iPhone 12/13"" LUB wpisz ""375 × 812"")
+INST-22	Wyszukiwarka mieści się w ekranie telefonu bez poziomego przewijania	P1 · Krytyczny	Viewport 375×812 px	viewport: 375×812	"1) Ustaw okno przeglądarki na rozmiar 375×812 pikseli (DevTools → Toggle device toolbar → wybierz ""iPhone SE"" lub ""iPhone 12/13"" LUB wpisz ""375 × 812"")
 2) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-instytucji/
 3) Poczekaj ~2s na załadowanie strony
 4) Sprawdź wzrokowo: brak poziomego paska przewijania na dole okna, core flow (pole wyszukiwania + filtry + tabela) widoczny bez ucinania"	"Brak poziomego paska przewijania na dole okna, licznik ""Znaleziono"" i tabela wyników widoczne bez ucinania"	PASS	-	Zaobserwowano: brak paska przewijania poziomego na telefonie 375×812, wszystkie elementy widoczne
-INST-24	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
+INST-23	Dostępność WCAG 2.2 AA — czytelność treści	P1 · Krytyczny	axe DevTools zainstalowany, Chrome DevTools z Rendering panel	strona bazowa + strona detali instytucji	"1) Otwórz stronę wyszukiwarki w Chrome DevTools + axe DevTools
 2) Uruchom skan axe dla wyszukiwarki i strony detali
 3) Resize viewport do 320×256 i sprawdź brak poziomego scrolla ani ucięcia treści
 4) Powiększ przeglądarkę do 200% (Ctrl+/Cmd+) i sprawdź brak clippingu tekstu
 5) DevTools → Rendering → Emulate vision deficiencies → grayscale, sprawdź czy stan filtrów (checked/unchecked) jest widoczny bez koloru"	Kontrast tekst ≥4.5:1, UI ≥3:1 (WCAG 1.4.3/1.4.11); brak horizontal scroll przy 320px (1.4.10); brak clippingu przy 200% zoom (1.4.4); informacja stanu nie jest przekazana wyłącznie kolorem (1.4.1)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~30 min. Krytyczne dla portalu .gov.pl (Ustawa o dostępności cyfrowej)
-INST-25	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
+INST-24	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytyczny	Odłączona mysz, wyszukiwarka na desktop	pełny flow: search + IC filter + klik wiersza + sortowanie + paginacja	"1) Odłącz mysz
 2) Tab do search input, wpisz frazę ""Vistula""
 3) Tab do checkbox ""Instytucja certyfikująca (IC)"", spacja żeby zaznaczyć
 4) Tab do wiersza w tabeli, Enter
@@ -95,7 +91,7 @@ INST-25	Dostępność WCAG 2.2 AA — pełna obsługa z klawiatury	P1 · Krytycz
 7) Sprawdź czy każdy focus ma widoczny outline
 8) Zmierz w DevTools target size ikon (X, close), min. 24×24 CSS px
 9) Sprawdź Tab in i Tab out dla comboboxa Siedziba (brak keyboard trap)"	Cały flow możliwy tylko z klawiatury, każdy focus ma widoczny wskaźnik (WCAG 2.4.7), Tab order = wizualny order (2.4.3), brak keyboard trap (2.1.2), target size ≥24×24 CSS px (2.5.8)	NOT RUN	-	Wymaga manualnej weryfikacji przez testera. ~45 min. Krytyczne dla portalu .gov.pl
-INST-26	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
+INST-25	Dostępność WCAG 2.2 AA — zrozumiałość i technologie wspomagające	P1 · Krytyczny	VoiceOver (macOS ⌘F5) lub NVDA (Windows) uruchomiony	pełny flow z czytnikiem ekranu	"1) Uruchom VoiceOver ⌘F5 lub NVDA
 2) Przejdź do search input i sprawdź czy label jest ogłoszony (nie tylko placeholder ""Nazwa, fragment nazwy"")
 3) Przejdź do comboboxa Siedziba i sprawdź label
 4) Wpisz frazę, sprawdź czy licznik ""Znaleziono: X"" jest ogłoszony (region aria-live)

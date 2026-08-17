@@ -18,3 +18,7 @@ node_modules/
 interview-notes.md
 interview-notes.pdf
 .claude-session-checkpoint.md
+
+# macOS junk
+.DS_Store
+**/.DS_Store
