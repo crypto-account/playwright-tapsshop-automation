@@ -11,6 +11,10 @@ node_modules/
 /.playwright-cli/
 /.playwright-mcp/
 
+# Persistent browser profiles for two-user chat load generator
+/.playwright-profiles/
+
 # Personal notes
 interview-notes.md
+interview-notes.pdf
 .claude-session-checkpoint.md

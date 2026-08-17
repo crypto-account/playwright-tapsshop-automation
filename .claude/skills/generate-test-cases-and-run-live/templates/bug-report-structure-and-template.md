@@ -90,7 +90,7 @@ Konwencje:
 - Kroki reprodukcji jako lista numerowana (każdy krok w osobnej linii) — nie single-line jak w cases MD
 - Screenshot link relatywny: `../screenshots/<CASE-ID>.png` (bo bug .md siedzi w `qa-runs/bugs/`)
 - Bez emoji w treści (chyba że explicit request usera)
-- Same reguły PL/no-jargon co dla test cases (patrz `columns.md`)
+- Same reguły PL/no-jargon co dla test cases (patrz `../rules/test-case-column-conventions.md`)
 
 ## Kolejność w bug tracker
 

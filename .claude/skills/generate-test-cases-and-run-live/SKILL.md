@@ -1,5 +1,5 @@
 ---
-name: qa-case
+name: generate-test-cases-and-run-live
 description: Generate test cases + execute them live via Playwright MCP + emit a styled XLSX report. Use when the user wants to author + run + report on a specific feature in one pass.
 ---
 
@@ -36,7 +36,7 @@ Po zebraniu wszystkich 5 odpowiedzi przechodzisz do kroku 2. Jeśli coś ambiguo
 
 ### 2. Załaduj checklistę
 
-Przeczytaj `.claude/skills/qa-case/best-practices.md`. Każdy generowany case musi spełniać każdą regułę w tym pliku.
+Przeczytaj `.claude/skills/generate-test-cases-and-run-live/rules/test-case-quality-checklist.md`. Każdy generowany case musi spełniać każdą regułę w tym pliku.
 
 ### 3. Krótka eksploracja
 
@@ -47,7 +47,7 @@ Przeczytaj `.claude/skills/qa-case/best-practices.md`. Każdy generowany case mu
 ### 4. Wygeneruj test cases
 
 **Ilość: 4–15 case'ów per story, twardy cap 25 total** dobrane pod złożoność ficzera:
-- 4 per story = floor pokrywający minimum coverage (1 positive + 2 negative + 1 edge z best-practices.md); niższa liczba = brak jakiejś kategorii
+- 4 per story = floor pokrywający minimum coverage (1 positive + 2 negative + 1 edge z rules/test-case-quality-checklist.md); niższa liczba = brak jakiejś kategorii
 - 15 per story = ceiling dla pojedynczej story
 - 25 total = twardy cap **dla per-story cases** (INST-01…INST-N pokrywających user stories). Cross-cutting cases (a11y manual + responsive automated) to overhead na szczycie — analogicznie do manual, **nie liczą się do 25 cap**. Powyżej per-story 25 → split na osobne runy (per story lub per grupa stories)
 - Proste ficzery (formularz kontaktowy, toast) → 4–6 per story; wyszukiwarki/filtry → 6–10 per story; złożone flow → do 15 per story
@@ -65,11 +65,11 @@ ID	Tytuł	Priorytet	Warunki wstępne	Dane testowe	Kroki	Oczekiwany rezultat	Wyni
 **Kolumny definicyjne (1–7) — opisują test:**
 
 - `ID` = `<FEATURE-PREFIX>-<NN>` (np. `LOGIN-01`, `LOGIN-02`, …, `LOGIN-22`), 2-cyfrowe zero-padded, **numeracja sekwencyjna dla całego runu** — bez znaczników `S<N>` ani `XC` niezależnie od liczby stories. Kolejność wierszy = kolejność story w Brief, potem cross-cutting (a11y, responsive) na końcu; grupowanie sygnalizowane wyłącznie porządkiem, nie ID-kiem
-- `Tytuł` — patrz `.claude/skills/qa-case/columns.md` sekcja Tytuł (6–10 słów, PL, format czynność+obiekt+efekt, bez English jargonu i konkretnych metryk)
+- `Tytuł` — patrz `.claude/skills/generate-test-cases-and-run-live/rules/test-case-column-conventions.md` sekcja Tytuł (6–10 słów, PL, format czynność+obiekt+efekt, bez English jargonu i konkretnych metryk)
 - `Priorytet` = `P1 · Krytyczny` | `P2 · Wysoki` | `P3 · Niski` (kod z przodu żeby Excel sort działał po wadze)
 - `Warunki wstępne` = stan startowy który musi być spełniony (Given)
-- `Dane testowe` — patrz `.claude/skills/qa-case/columns.md` sekcja Dane testowe (dla wyszukiwarek/filtrów z alternatywami: explicit label „X używana w krokach: 'val'; alternatywy do testowania manualnego: 'val2', 'val3'"; Kroki wstawiają wartość INLINE, np. „wpisz frazę 'val'" — bez odwołania „z Dane testowe")
-- `Kroki` = numerowane, imperatywne, deterministyczne, bez weryfikacji. **URL-e zawsze pełne** (`https://...`), nie relatywne ścieżki. **UI-driven, nie URL-driven** — krok 1 = otwórz base URL bez query params; kolejne kroki = akcje w UI (wpisywanie, klik, zaznaczenie), żeby tester mógł manualnie odtworzyć bez ręcznego konstruowania URL. URL z query params tylko gdy URL jest przedmiotem testu (injection/deep-link) lub jako setup shortcut z uzasadnieniem w Notatki. Pełna reguła + wyjątki: `best-practices.md` sekcja Steps → „UI-driven, not URL-driven". Format zależy od typu pliku — patrz krok 6.
+- `Dane testowe` — patrz `.claude/skills/generate-test-cases-and-run-live/rules/test-case-column-conventions.md` sekcja Dane testowe (dla wyszukiwarek/filtrów z alternatywami: explicit label „X używana w krokach: 'val'; alternatywy do testowania manualnego: 'val2', 'val3'"; Kroki wstawiają wartość INLINE, np. „wpisz frazę 'val'" — bez odwołania „z Dane testowe")
+- `Kroki` = numerowane, imperatywne, deterministyczne, bez weryfikacji. **URL-e zawsze pełne** (`https://...`), nie relatywne ścieżki. **UI-driven, nie URL-driven** — krok 1 = otwórz base URL bez query params; kolejne kroki = akcje w UI (wpisywanie, klik, zaznaczenie), żeby tester mógł manualnie odtworzyć bez ręcznego konstruowania URL. URL z query params tylko gdy URL jest przedmiotem testu (injection/deep-link) lub jako setup shortcut z uzasadnieniem w Notatki. Pełna reguła + wyjątki: `rules/test-case-quality-checklist.md` sekcja Steps → „UI-driven, not URL-driven". Format zależy od typu pliku — patrz krok 6.
 - `Oczekiwany rezultat` = JEDEN obserwowalny efekt (Then)
 
 `Type` (positive/negative/edge) NIE jest kolumną — dyscyplina coverage'u siedzi w best-practices, intent testu komunikuje `Tytuł`.
@@ -89,7 +89,7 @@ Feature name / suite NIE jest per-row column — żyje w Brief sekcji `.md`. Nie
 
 **Specjalne kategorie do wygenerowania:**
 
-- **A11y (WCAG in scope)** — **TYLKO manual, brak automated**. OBOWIĄZKOWO 3 bundled manual cases (Perceivable / Operable / Understandable+AT). Pełna referencja: best-practices.md sekcja „Manual WCAG 2.2 AA checks". Automated Playwright a11y checks NIE są generowane — dają false confidence przy niepełnym pokryciu real WCAG audytu. Real a11y jest zawsze manualny.
+- **A11y (WCAG in scope)** — **TYLKO manual, brak automated**. OBOWIĄZKOWO 3 bundled manual cases (Perceivable / Operable / Understandable+AT). Pełna referencja: rules/test-case-quality-checklist.md sekcja „Manual WCAG 2.2 AA checks". Automated Playwright a11y checks NIE są generowane — dają false confidence przy niepełnym pokryciu real WCAG audytu. Real a11y jest zawsze manualny.
   - **Priorytet WCAG cases: ZAWSZE `P1 · Krytyczny`** — compliance/legal risk. Dla portali `.gov.pl` i innych regulowanych (banking, healthcare) to wymóg prawny (Ustawa o dostępności cyfrowej / EU EAA / ADA). Nawet gdy feature P2, a11y cases dostają P1.
 - **Responsive (desktop/tablet/mobile)** — dla portali publicznych / e-commerce / consumer-facing sites **ZAWSZE required**, niezależnie od user story. >60% polskiego web traffic to mobile, ale desktop to nadal główny kanał dla portali gov/edu. Generuj **3 automated cases w kolejności desktop → tablet → mobile**:
   1. **Desktop bundled** — 3 breakpointy w 1 case: 1280×720 (małe laptopy, dolny próg), 1440×900 (MBP default), 1920×1080 (FHD monitor). Assertion per breakpoint: brak horizontal overflow + core UI (search/filtry/lista) widoczne.
@@ -147,7 +147,7 @@ Dla **każdego FAIL row** w execution report — bez pytania usera — generuj:
    **Środowisko — wersje wykryte automatycznie**: przed generacją bugów zapytaj Playwright MCP o browser wersję (`browser_evaluate({ function: '() => navigator.userAgent' })`) i sparsuj Chrome major. OS wersja: `sw_vers -productVersion` (macOS), `uname -r` (Linux), PowerShell (Windows). Formaty: `Chrome 151`, `macOS 15.7.4`. Nie hardkoduj „Chrome (latest)" ani generycznego „macOS" — każdy bug musi mieć konkretną wersję do reprodukcji.
 2. **Plik `qa-runs/bugs/<BUG-ID>.md`** (per-bug markdown, standalone kopiowalny do Jira/GitHub).
 
-Pełna referencja formatu, kolumn i markdown template: `.claude/skills/qa-case/bug-report.md`.
+Pełna referencja formatu, kolumn i markdown template: `.claude/skills/generate-test-cases-and-run-live/templates/bug-report-structure-and-template.md`.
 
 Kluczowe:
 - **ID bugów sekwencyjne** — `<FEATURE-PREFIX>-BR-01`, `-02`, … w kolejności ID case'a rosnąco
@@ -230,4 +230,4 @@ Nic więcej. Bez podsumowania co zrobiłeś, bez recap-u case'ów.
 - NIE wymyślaj osobnego „bugs" konceptu — bugi to FAIL rows w execution report (match po ID). `-report.tsv` i `## Execution report` to te same dane
 - NIE wymyślaj lokatorów — zawsze pracuj ze snapshot
 - NIE pomijaj egzekucji „bo case wygląda oczywiście" — każdy automated case run
-- NIE bundle'uj multiple assertions w jednym case (patrz best-practices.md)
+- NIE bundle'uj multiple assertions w jednym case (patrz rules/test-case-quality-checklist.md)

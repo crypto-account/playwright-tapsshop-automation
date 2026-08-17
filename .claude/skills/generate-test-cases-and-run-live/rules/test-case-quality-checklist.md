@@ -1,4 +1,4 @@
-# Test case best practices — enforced by /qa-case
+# Test case quality checklist — enforced by /generate-test-cases-and-run-live
 
 Every generated case MUST satisfy every rule below. Cases that fail the checklist do not go into the output.
 

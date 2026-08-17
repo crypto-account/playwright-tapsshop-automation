@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convert a /qa-case run's two TSV files into a styled single-file XLSX.
+Convert a /generate-test-cases-and-run-live run's two TSV files into a styled single-file XLSX.
 
 Usage:
     scripts/qa-tsv-to-xlsx.py <base>

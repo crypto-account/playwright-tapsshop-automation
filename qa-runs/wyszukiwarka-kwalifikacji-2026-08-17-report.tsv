@@ -1,0 +1,34 @@
+ID	Status	Rzeczywisty rezultat	Waga	Zrzut ekranu	Reprodukcja
+KWAL-01	PASS	Znaleziono: 168, kafelek "Występowanie publiczne" widoczny na liście.	-	-	-
+KWAL-02	PASS	Otworzyła się nowa karta z URL /kwalifikacje/Występowanie-publiczne,14171; h1 = "Występowanie publiczne"; 5 sekcji contentu obecnych.	-	-	-
+KWAL-03	PASS	Znaleziono: 0, komunikat "Brak danych" wyświetlony na liście wyników.	-	-	-
+KWAL-04	PASS	"Kucharz" = 12, "kucharz" = 12, "KUCHARZ" = 12, "  Kucharz  " = 12 — wszystkie warianty identyczne.	-	-	-
+KWAL-05	FAIL	"księgowy" (z ogonkiem) = 570 wyników, "ksiegowy" (bez ogonków) = 0 wyników. Backend nie normalizuje polskich diakrytyków.	Wysoka	qa-runs/screenshots/KWAL-05.png	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-kwalifikacji/
+2) Wpisz ""księgowy"" (z polskimi znakami), kliknij ""Szukaj"", zanotuj wartość ""Znaleziono""
+3) Wyczyść pole i wpisz ""ksiegowy"" (bez polskich znaków), kliknij ""Szukaj"""
+KWAL-06	PASS	Długi ciąg 500x"a": Znaleziono 0, strona bez awarii. URL z payloadem: input renderuje "<script>alert(1)</script>" jako bezpieczną wartość tekstową (brak wykonania kodu, brak alertu); limit=99999 sanitowany do 15, offset=-1 sanitowany do 0.	-	-	-
+KWAL-07	PASS	Znaleziono: 23 (dokładnie zgodne z liczbą przy nazwie kategorii "rzemieślnicze (23)").	-	-	-
+KWAL-08	PASS	Znaleziono: 3. Wszystkie 3 widoczne kafelki mają nazwę zaczynającą się od "Kucharz" ("Kucharz (od 2019)", "Kucharz (od 2017)", "Kucharz (od 2012)").	-	-	-
+KWAL-09	PASS	Po usunięciu kategorii licznik powrócił z 3 do 12 (wartość dla samego wyszukania "Kucharz").	-	-	-
+KWAL-10	PASS	Znaleziono: 2281 (dokładnie zgodne z liczbą przy filtrze "Zdrowie i uroda (2281)").	-	-	-
+KWAL-11	PASS	Zdrowie i uroda alone = 2281; po dodaniu Sport i rekreacja = 2748 (wzrost o 467, mniejszy niż suma arytmetyczna 490 z powodu overlapów — poprawna logika OR).	-	-	-
+KWAL-12	PASS	Zdrowie i uroda (2281) + PRK 5 (351) = 72. Wynik mniejszy niż każdy z liczników pojedynczych — poprawna logika AND między grupami.	-	-	-
+KWAL-13	PASS	Znaleziono: 71 (znacznie mniejsze niż początkowa liczba 20778).	-	-	-
+KWAL-14	PASS	Znaleziono: 63 (dokładnie zgodne z liczbą przy filtrze "budowlana (BUD) (63)").	-	-	-
+KWAL-15	PASS	Znaleziono: 351 (dokładnie zgodne z liczbą przy filtrze "PRK 5 (351)"). Wszystkie widoczne kafelki mają wskaźnik "PRK5".	-	-	-
+KWAL-16	PASS	Po kliknięciu "Wyczyść wszystkie" licznik "Znaleziono" powrócił z 351 do 20778; wszystkie checkboxy odznaczone (checked count z 1 do 0).	-	-	-
+KWAL-17	PASS	Rozpoczęło się pobieranie pliku "lista_kwalifikacji.xlsx"; pobrany plik otwiera się w Excelu bez błędu formatu.	-	-	-
+KWAL-18	PASS	UI: Znaleziono 490; pobrany plik lista_kwalifikacji.xlsx zawiera 491 wierszy (1 header + 490 data). Zgodność 100%.	-	-	-
+KWAL-19	PASS	Rozpoczęło się pobieranie pliku lista_kwalifikacji.xlsx; pobrany plik ma 20779 wierszy (1 header + 20778 data), otwiera się bez błędu formatu.	-	-	-
+KWAL-20	PASS	Kafelki zniknęły z DOM (0), wyrenderowana tabela z 21 wierszami (1 header + 20 data); przycisk "Przełącz na widok kafelków" nieaktywny (widok tabeli aktywny).	-	-	-
+KWAL-21	PASS	Powrót do kafelków: brak tabeli w DOM, 15 kafelków renderowanych, licznik "Znaleziono: 20778" zachowany.	-	-	-
+KWAL-22	FAIL	Po pierwszym kliknięciu "Więcej kwalifikacji": lista rośnie z 15 do 24 kafelków (dodano 9, oczekiwano 15), URL zmienia się na offset=24 zamiast oczekiwanego 15. Po drugim kliknięciu: 33 kafelki (kolejne +9). Rozmiar porcji ładowanej na klik (9) nie zgodny z parametrem limit=15 w URL.	Średnia	qa-runs/screenshots/KWAL-22.png	"1) Otwórz https://kwalifikacje.gov.pl/wyszukiwarka-kwalifikacji/
+2) Policz kafelki na liście (powinno być 15)
+3) Przewiń na dół listy i kliknij przycisk ""Więcej kwalifikacji""
+4) Policz kafelki ponownie"
+KWAL-23	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet).	-	-	-
+KWAL-24	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet).	-	-	-
+KWAL-25	NOT RUN	Wymaga wykonania manualnego przez testera (patrz Kroki w cases sheet).	-	-	-
+KWAL-26	PASS	1280×720: scrollWidth=1265, clientWidth=1265 (brak overflow). 1440×900: 1425/1425. 1920×1080: 1905/1905. Wszystkie 3 breakpointy renderują core UI bez ucinania.	-	-	-
+KWAL-27	PASS	768×1024: scrollWidth=753, clientWidth=753 (brak overflow). Wyszukiwanie "Kucharz" zwróciło 12 wyników (przepływ działa).	-	-	-
+KWAL-28	PASS	375×812: scrollWidth=360, clientWidth=360 (brak overflow; layout ma min-width=360 mniejszy niż viewport 375, bez horizontal scroll). Wyszukiwanie "Kucharz" zwróciło 12 wyników.	-	-	-
